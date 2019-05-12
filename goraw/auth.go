@@ -1,13 +1,13 @@
 package goraw
 
 import (
-	`bytes`
-	b64 `encoding/base64`
-	`encoding/json`
-	`net/http`
-	`net/url`
-	`strings`
-	`time`
+	"bytes"
+	b64 "encoding/base64"
+	"encoding/json"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
 )
 
 // When we initialize the Reddit instance,
@@ -24,15 +24,15 @@ func Init(c Credentials) *Reddit {
 // This goroutine reauthenticates the user
 // every 45 minutes. It should be run with the go
 // statement
-func (c* Reddit) auto_refresh() {
-	for ;; {
+func (c *Reddit) auto_refresh() {
+	for {
 		time.Sleep(45 * time.Minute)
 		c.update_creds()
 	}
 }
 
 // Reauthenticate and updates the object itself
-func (c* Reddit) update_creds() {
+func (c *Reddit) update_creds() {
 	temp, _ := Authenticate(&c.Creds)
 	*c = *temp
 }
@@ -40,7 +40,7 @@ func (c* Reddit) update_creds() {
 // Returns an access_token acquired using the provided credentials
 func Authenticate(c *Credentials) (*Reddit, error) {
 	// URL to get access_token
-	auth_url := Base + "api/v1/access_token"
+	auth_url := RedditBase + "api/v1/access_token"
 
 	// Define the data to send in the request
 	form := url.Values{}

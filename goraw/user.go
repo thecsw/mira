@@ -1,14 +1,15 @@
 package goraw
 
 import (
-	"./redditor"
 	"bytes"
 	"encoding/json"
 	"net/http"
+
+	"./redditor"
 )
 
 func (c *Reddit) Me() redditor.Me {
-	target := Authed_base + "api/v1/me"
+	target := RedditApiMe
 	r, _ := http.NewRequest("GET", target, nil)
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
@@ -23,7 +24,7 @@ func (c *Reddit) Me() redditor.Me {
 }
 
 func (c *Reddit) GetUser(name string) redditor.Redditor {
-	target := Authed_base + "user/" + name + "/about"
+	target := RedditOauth + "user/" + name + "/about"
 	r, _ := http.NewRequest("GET", target, nil)
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
