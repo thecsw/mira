@@ -10,23 +10,29 @@ import (
 	`time`
 )
 
+// When we initialize the Reddit instance,
+// automatically start a goroutine that will
+// update the token every 45 minutes. The
+// auto_refresh should not be accessible to
+// the end user as it is an internal method
 func Init(c Credentials) *Reddit {
 	auth, _ := Authenticate(&c)
+	go auth.auto_refresh()
 	return auth
 }
 
 // This goroutine reauthenticates the user
-// every hour. It should be run with the go
+// every 45 minutes. It should be run with the go
 // statement
-func (c* Reddit) AutoRefresh() {
+func (c* Reddit) auto_refresh() {
 	for ;; {
-		time.Sleep(3600 * time.Second)
-		c.UpdateCreds()
+		time.Sleep(45 * time.Minute)
+		c.update_creds()
 	}
 }
 
 // Reauthenticate and updates the object itself
-func (c* Reddit) UpdateCreds() {
+func (c* Reddit) update_creds() {
 	temp, _ := Authenticate(&c.Creds)
 	*c = *temp
 }

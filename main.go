@@ -14,11 +14,9 @@ func main() {
 		"0p3244wGerMIYDZD",
 		"HiveWriting_bot Ubuntu 16.04 (Reddit Hive Mind is writing a poem)",
 	}
+	// It will handle aute refreshing the tokens
 	r := goraw.Init(cred)
 	fmt.Println(r)
-	r.UpdateCreds()
-	fmt.Println(r)
-	go r.AutoRefresh() // Enables auto refreshing of the tokens
 	time.Sleep(5 * time.Second)
 //	fmt.Println(r.Me())
 //	fmt.Println(r.GetUser("thecsw"))
