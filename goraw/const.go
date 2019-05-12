@@ -4,7 +4,7 @@ package goraw
 
 const (
 	RedditBase  = "https://www.reddit.com/"
-	RedditOauth = "https://oauth.reddit.com/"
+	RedditOauth = "https://oauth.reddit.com"
 
 	// All of them are requested via oauth
 	RedditApiMe          = RedditOauth + "/api/v1/me"

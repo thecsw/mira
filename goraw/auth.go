@@ -8,7 +8,17 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"io/ioutil"
+	"regexp"
 )
+
+type Credentials struct {
+	ClientId     string
+	ClientSecret string
+	Username     string
+	Password     string
+	UserAgent    string
+}
 
 // When we initialize the Reddit instance,
 // automatically start a goroutine that will
@@ -72,4 +82,19 @@ func Authenticate(c *Credentials) (*Reddit, error) {
 	json.Unmarshal(buf.Bytes(), &auth)
 	auth.Creds = *c
 	return &auth, err
+}
+
+func ReadCreds(file string) Credentials {
+	pattern := `CLIENT_ID = (.+)\nCLIENT_SECRET = (.+)\nUSERNAME = (.+)\nPASSWORD = (.+)\nUSER_AGENT = (.+)`
+	r, _ := regexp.Compile(pattern)
+	data, _ := ioutil.ReadFile(file)
+	s := string(data)
+	creds := Credentials{
+		r.FindStringSubmatch(s)[1],
+		r.FindStringSubmatch(s)[2],
+		r.FindStringSubmatch(s)[3],
+		r.FindStringSubmatch(s)[4],
+		r.FindStringSubmatch(s)[5],
+	}
+	return creds
 }

@@ -5,11 +5,3 @@ type Reddit struct {
 	Duration int    `json:"expires_in"`
 	Creds    Credentials
 }
-
-type Credentials struct {
-	ClientId     string
-	ClientSecret string
-	Username     string
-	Password     string
-	UserAgent    string
-}

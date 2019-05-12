@@ -1,29 +1,4 @@
-package redditor
-
-type Redditor struct {
-	Kind string `json:"kind"`
-	Data Data_s `json:"data"`
-}
-
-type Data_s struct {
-	IsEmployee        bool        `json:"is_employee"`
-	IconImg           string      `json:"icon_img"`
-	PrefShowSnoovatar bool        `json:"pref_show_snoovatar"`
-	Name              string      `json:"name"`
-	IsFriend          bool        `json:"is_friend"`
-	Created           float64     `json:"created"`
-	HasSubscribed     bool        `json:"has_subscribed"`
-	HideFromRobots    bool        `json:"hide_from_robots"`
-	CreatedUtc        float64     `json:"created_utc"`
-	LinkKarma         float64     `json:"link_karma"`
-	CommentKarma      float64     `json:"comment_karma"`
-	IsGold            bool        `json:"is_gold"`
-	IsMod             bool        `json:"is_mod"`
-	Verified          bool        `json:"verified"`
-	Subreddit         Subreddit_s `json:"subreddit"`
-	HasVerifiedEmail  bool        `json:"has_verified_email"`
-	Id                string      `json:"id"`
-}
+package goraw
 
 type Me struct {
 	IsEmployee              bool        `json:"is_employee"`
@@ -39,7 +14,7 @@ type Me struct {
 	GoldExpiration          int64       `json:"gold_expiration"`
 	HasGoldSubscription     bool        `json:"has_gold_subscription`
 	NumFriends              int64       `json:"num_friends"`
-	Features                Features_s  `json:"features"`
+	Features                MeFeatures  `json:"features"`
 	HasAndroidSubscription  bool        `json:"has_android_subscription"`
 	Verified                bool        `json:"verified"`
 	NewModmailExists        bool        `json:"new_modmail_exists"`
@@ -83,23 +58,23 @@ type Me struct {
 	SeenSubredditChatFtux   bool        `json:"seen_subreddit_chat_ftux"`
 }
 
-type Features_s struct {
+type MeFeatures struct {
 	RichtextPreviews                      bool         `json:"richtext_previews"`
 	DoNotTrack                            bool         `json:"do_not_track"`
 	ChatSubreddit                         bool         `json:"chat_subreddit"`
 	Chat                                  bool         `json:"chat"`
 	SeqRandomizeSort                      bool         `json:"seq_randomize_sort"`
 	Sequence                              bool         `json:"sequence"`
-	MwebXpromoRevampV2                    SubFeature_s `json:"mweb_xpromo_revamp_v2"`
+	MwebXpromoRevampV2                    MeSubFeature `json:"mweb_xpromo_revamp_v2"`
 	MwebXpromoInterstitialCommentsIos     bool         `json:"mweb_xpromo_interstitial_comments_ios"`
 	ChatReddarReports                     bool         `json:chat_reddar_reports`
 	ChatRollout                           bool         `json:"chat_rollout"`
 	MwebXpromoInterstitialCommentsAndroid bool         `json:"mwev_xpromo_interstitial_comments_android"`
 	ChatGroutRollout                      bool         `json:"chat_group_rollout"`
-	MwebLinkTab                           SubFeature_s `json:"mweb_link_tab"`
+	MwebLinkTab                           MeSubFeature `json:"mweb_link_tab"`
 	SpezModal                             bool         `json:"spez_modal"`
 	CommunityAwards                       bool         `json:"community_awards"`
-	DefaultSrsHoldout                     SubFeature_s `json:"default_srs_holdout"`
+	DefaultSrsHoldout                     MeSubFeature `json:"default_srs_holdout"`
 	ChatUserSettings                      bool         `json:"chat_user_settings"`
 	DualWriteUserPrefs                    bool         `json:"dual_write_user_prefs"`
 
@@ -107,46 +82,8 @@ type Features_s struct {
 	MwebXpromoModalListingClickDailyDismisssibleIos    bool `json:"mweb_xpromo_modal_listing_click_daily_dismissible_android"`
 }
 
-type SubFeature_s struct {
+type MeSubFeature struct {
 	Owner        string `json:"owner"`
 	Variant      string `json:"variant"`
 	ExperimentId int64  `json:"experiment_id"`
-}
-
-type Subreddit_s struct {
-	DefaultSet                 bool      `json:"default_set"`
-	UserIsContributor          bool      `json:"user_is_contributor"`
-	BannerImg                  string    `json:"banner_img"`
-	DisableContributorRequests bool      `json:"disable_contributor_requests"`
-	UserIsBanned               bool      `json:"user_is_banned"`
-	FreeFormReports            bool      `json:"free_form_reports"`
-	CommunityIcon              string    `json:"community_icon"`
-	ShowMedia                  bool      `json:"show_media"`
-	IconColor                  string    `json:"icon_color"`
-	UserIsMuted                bool      `json:"user_is_muted"`
-	DisplayName                string    `json:"display_name"`
-	HeaderImg                  *string   `json:"header_img"`
-	Title                      string    `json:"title"`
-	Over18                     bool      `json:"over_18"`
-	IconSize                   []float64 `json:"icon_size"`
-	PrimaryColor               string    `json:"primary_color"`
-	IconImg                    string    `json:"icon_img"`
-	Description                string    `json:"description"`
-	HeaderSize                 *string   `json:"header_size"`
-	RestrictPosting            bool      `json:"restrict_posting"`
-	RestrictCommenting         bool      `json:"restrict_commenting"`
-	Subscribers                float64   `json:"subscribers"`
-	IsDefaultIcon              bool      `json:"is_default_icon"`
-	LinkFlairPosition          string    `json:"link_flair_position"`
-	DisplayNamePrefixed        string    `json:"display_name_prefixed"`
-	KeyColor                   string    `json:"key_color"`
-	Name                       string    `json:"name"`
-	IsDefaultBanner            bool      `json:"is_default_banner"`
-	Url                        string    `json:"url"`
-	BannerSize                 []float64 `json:"banner_size"`
-	UserIsModerator            bool      `json:"user_is_moderator"`
-	PublicDescription          string    `json:"public_description"`
-	LinkFlairEnabled           bool      `json:"link_flair_enabled"`
-	SubredditType              string    `json:"subreddit_type"`
-	UserIsSubscriber           bool      `json:"user_is_subscriber"`
 }
