@@ -6,7 +6,6 @@ import (
 	`net/http`
 	`bytes`
 	`encoding/json`
-	`fmt`
 )
 
 type Reddit struct {
@@ -26,6 +25,10 @@ func Init(id, sec, user, pass, agent string) (Reddit) {
 	return r
 }
 
+// We have to make a new structure for Me
+// I can do it tomorrow. It will be similar
+// to redditor.Redditor but for some reason
+// it should be different
 func (c* Reddit) Me() redditor.Redditor {
 	target := auth.Authed_base + "api/v1/me"
 	r, _ := http.NewRequest("GET", target, nil)
@@ -38,7 +41,6 @@ func (c* Reddit) Me() redditor.Redditor {
 	buf.ReadFrom(response.Body)
 	user := redditor.Redditor{}
 	json.Unmarshal(buf.Bytes(), &user)
-	fmt.Println(string(buf.Bytes()))
 	return user
 }
 
