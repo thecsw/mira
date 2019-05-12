@@ -1,11 +1,11 @@
 package goraw
 
 import (
- 	"bytes"
+	"bytes"
 	"encoding/json"
 	"net/http"
- 	"net/url"
- 	"strings"
+	"net/url"
+	"strings"
 )
 
 func (c *Comment) Reply(rd *Reddit, text string) Comment {

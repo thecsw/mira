@@ -15,7 +15,7 @@ type CommentJsonData struct {
 
 type CommentJsonDataThing struct {
 	Kind string
-	Data   CommentJsonDataThingData
+	Data CommentJsonDataThingData
 }
 
 type CommentJsonDataThingData struct {

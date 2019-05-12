@@ -4,12 +4,12 @@ import (
 	"bytes"
 	b64 "encoding/base64"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
-	"io/ioutil"
-	"regexp"
 )
 
 type Credentials struct {
