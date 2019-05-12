@@ -1,33 +1,19 @@
 package goraw
 
 import (
-	"bytes"
-	b64 "encoding/base64"
-	"encoding/json"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
-	"fmt"
+	`bytes`
+	b64 `encoding/base64`
+	`encoding/json`
+	`net/http`
+	`net/url`
+	`strings`
+	`time`
 )
 
-type Reddit struct {
-	Token     string `json:"access_token"`
-	Duration  int    `json:"expires_in"`
-	Creds Credentials
+func Init(c Credentials) *Reddit {
+	auth, _ := Authenticate(&c)
+	return auth
 }
-
-type Credentials struct {
-	ClientId     string
-	ClientSecret string
-	Username     string
-	Password     string
-	UserAgent    string
-}
-
-// Base is the basic reddit base URL, authed is the base URL for use once authenticated
-var Base string = "https://www.reddit.com/"
-var Authed_base string = "https://oauth.reddit.com/"
 
 // This goroutine reauthenticates the user
 // every hour. It should be run with the go
