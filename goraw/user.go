@@ -7,11 +7,7 @@ import (
 	"net/http"
 )
 
-// We have to make a new structure for Me
-// I can do it tomorrow. It will be similar
-// to redditor.Redditor but for some reason
-// it should be different
-func (c *Reddit) Me() redditor.Redditor {
+func (c *Reddit) Me() redditor.Me {
 	target := Authed_base + "api/v1/me"
 	r, _ := http.NewRequest("GET", target, nil)
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
@@ -21,7 +17,7 @@ func (c *Reddit) Me() redditor.Redditor {
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
-	user := redditor.Redditor{}
+	user := redditor.Me{}
 	json.Unmarshal(buf.Bytes(), &user)
 	return user
 }
