@@ -38,7 +38,7 @@ func (c *Reddit) GetUser(name string) Redditor {
 	return user
 }
 
-func (c *Reddit) Submit(title, text, sr string) Submission {
+func (c *Reddit) Submit(sr string, title string, text string) Submission {
 	target := RedditOauth + "/api/submit"
 	form := url.Values{}
 	form.Add("title", title)
@@ -58,4 +58,23 @@ func (c *Reddit) Submit(title, text, sr string) Submission {
 	post := Submission{}
 	json.Unmarshal(buf.Bytes(), &post)
 	return post
+}
+
+func (c *Reddit) Reply(comment_id string, text string) Comment {
+	target := RedditOauth + "/api/comment"
+	form := url.Values{}
+	form.Add("text", text)
+	form.Add("thing_id", comment_id)
+	form.Add("api_type", "json")
+	r, _ := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, _ := client.Do(r)
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	comment := Comment{}
+	json.Unmarshal(buf.Bytes(), &comment)
+	return comment
 }

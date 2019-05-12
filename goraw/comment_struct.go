@@ -59,7 +59,7 @@ type CommentJsonDataThingData struct {
 	Author_patreon_flair          bool
 	Downs                         int
 	Author_flair_richtext         []string
-	Is_submitter                  bool
+	IsSubmitter                  bool
 	Collapsed_reason              string // *
 	Body_html                     string
 	Stickied                      bool
