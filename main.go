@@ -1,13 +1,13 @@
 package main
 
 import (
-	`./goraw`
-	`fmt`
-	`time`
+	"fmt"
+
+	"./goraw"
 )
 
 func main() {
-	cred := goraw.Credentials {
+	cred := goraw.Credentials{
 		"PMQYCRTBZq6qHw",
 		"oLWXPkWF80zF8KnejyGjvZB_6VE",
 		"HiveWriting_bot",
@@ -17,7 +17,7 @@ func main() {
 	// It will handle aute refreshing the tokens
 	r := goraw.Init(cred)
 	fmt.Println(r)
-	time.Sleep(5 * time.Second)
-//	fmt.Println(r.Me())
-//	fmt.Println(r.GetUser("thecsw"))
+
+	fmt.Println(r.Me())
+	fmt.Println(r.GetUser("thecsw"))
 }
