@@ -1,28 +1,15 @@
 package goraw
 
 import (
-	`./auth`
 	`./redditor`
 	`net/http`
 	`bytes`
 	`encoding/json`
 )
 
-type Reddit struct {
-	Token     string `json:"access_token"`
-	Duration  int    `json:"expires_in"`
-	UserAgent string
-}
-
-func Init(id, sec, user, pass, agent string) (Reddit) {
-	cred := auth.Credentials {id,sec,user,pass,agent}
-	auth, _ := auth.Authenticate(&cred)
-	r := Reddit{
-		auth.Token,
-		auth.Duration,
-		auth.UserAgent,
-	}
-	return r
+func Init(c Credentials) (*Reddit) {
+	auth, _ := Authenticate(&c)
+	return auth
 }
 
 // We have to make a new structure for Me
@@ -30,9 +17,9 @@ func Init(id, sec, user, pass, agent string) (Reddit) {
 // to redditor.Redditor but for some reason
 // it should be different
 func (c* Reddit) Me() redditor.Redditor {
-	target := auth.Authed_base + "api/v1/me"
+	target := Authed_base + "api/v1/me"
 	r, _ := http.NewRequest("GET", target, nil)
-	r.Header.Set("User-Agent", c.UserAgent)
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, _ := client.Do(r)
@@ -45,9 +32,9 @@ func (c* Reddit) Me() redditor.Redditor {
 }
 
 func (c* Reddit) GetUser(name string) redditor.Redditor {
-	target := auth.Authed_base + "user/" + name + "/about"
+	target := Authed_base + "user/" + name + "/about"
 	r, _ := http.NewRequest("GET", target, nil)
-	r.Header.Set("User-Agent", c.UserAgent)
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, _ := client.Do(r)

@@ -1,4 +1,4 @@
-package auth
+package goraw
 
 import (
 	"bytes"
@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+	"fmt"
 )
 
-type Authorization struct {
+type Reddit struct {
 	Token     string `json:"access_token"`
 	Duration  int    `json:"expires_in"`
-	UserAgent string
+	Creds Credentials
 }
 
 type Credentials struct {
@@ -27,8 +29,24 @@ type Credentials struct {
 var Base string = "https://www.reddit.com/"
 var Authed_base string = "https://oauth.reddit.com/"
 
+// This goroutine reauthenticates the user
+// every hour. It should be run with the go
+// statement
+func (c* Reddit) AutoRefresh() {
+	for ;; {
+		time.Sleep(3600 * time.Second)
+		c.UpdateCreds()
+	}
+}
+
+// Reauthenticate and updates the object itself
+func (c* Reddit) UpdateCreds() {
+	temp, _ := Authenticate(&c.Creds)
+	*c = *temp
+}
+
 // Returns an access_token acquired using the provided credentials
-func Authenticate(c *Credentials) (*Authorization, error) {
+func Authenticate(c *Credentials) (*Reddit, error) {
 	// URL to get access_token
 	auth_url := Base + "api/v1/access_token"
 
@@ -58,9 +76,8 @@ func Authenticate(c *Credentials) (*Authorization, error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 
-	var auth Authorization
+	auth := Reddit{}
 	json.Unmarshal(buf.Bytes(), &auth)
-	auth.UserAgent = c.UserAgent
-
+	auth.Creds = *c
 	return &auth, err
 }
