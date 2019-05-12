@@ -4,10 +4,8 @@ import (
 	"bytes"
 	b64 "encoding/base64"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -18,33 +16,6 @@ type Credentials struct {
 	Username     string
 	Password     string
 	UserAgent    string
-}
-
-// When we initialize the Reddit instance,
-// automatically start a goroutine that will
-// update the token every 45 minutes. The
-// auto_refresh should not be accessible to
-// the end user as it is an internal method
-func Init(c Credentials) *Reddit {
-	auth, _ := Authenticate(&c)
-	go auth.auto_refresh()
-	return auth
-}
-
-// This goroutine reauthenticates the user
-// every 45 minutes. It should be run with the go
-// statement
-func (c *Reddit) auto_refresh() {
-	for {
-		time.Sleep(45 * time.Minute)
-		c.update_creds()
-	}
-}
-
-// Reauthenticate and updates the object itself
-func (c *Reddit) update_creds() {
-	temp, _ := Authenticate(&c.Creds)
-	*c = *temp
 }
 
 // Returns an access_token acquired using the provided credentials
@@ -84,17 +55,18 @@ func Authenticate(c *Credentials) (*Reddit, error) {
 	return &auth, err
 }
 
-func ReadCreds(file string) Credentials {
-	pattern := `CLIENT_ID = (.+)\nCLIENT_SECRET = (.+)\nUSERNAME = (.+)\nPASSWORD = (.+)\nUSER_AGENT = (.+)`
-	r, _ := regexp.Compile(pattern)
-	data, _ := ioutil.ReadFile(file)
-	s := string(data)
-	creds := Credentials{
-		r.FindStringSubmatch(s)[1],
-		r.FindStringSubmatch(s)[2],
-		r.FindStringSubmatch(s)[3],
-		r.FindStringSubmatch(s)[4],
-		r.FindStringSubmatch(s)[5],
+// This goroutine reauthenticates the user
+// every 45 minutes. It should be run with the go
+// statement
+func (c *Reddit) auto_refresh() {
+	for {
+		time.Sleep(45 * time.Minute)
+		c.update_creds()
 	}
-	return creds
+}
+
+// Reauthenticate and updates the object itself
+func (c *Reddit) update_creds() {
+	temp, _ := Authenticate(&c.Creds)
+	*c = *temp
 }
