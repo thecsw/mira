@@ -5,8 +5,11 @@ package mira
 // update the token every 45 minutes. The
 // auto_refresh should not be accessible to
 // the end user as it is an internal method
-func Init(c Credentials) *Reddit {
-	auth, _ := Authenticate(&c)
+func Init(c Credentials) (*Reddit, error) {
+	auth, err := Authenticate(&c)
+	if err != nil {
+		return nil, err
+	}
 	go auth.auto_refresh()
-	return auth
+	return auth, nil
 }

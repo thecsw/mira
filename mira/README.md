@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	r := mira.Init(mira.ReadCredsFromFile("login.cong"))
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.cong"))
 	c, _ := r.StreamCommentReplies()
 	for {
 		msg := <- c
@@ -27,3 +27,17 @@ func main() {
 	}
 }
 ```
+
+## Config file
+
+The config file structure is very simple:
+
+```
+CLIENT_ID =
+CLIENT_SECRET =
+USERNAME =
+PASSWORD =
+USER_AGENT =
+```
+
+
