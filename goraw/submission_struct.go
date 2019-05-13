@@ -10,8 +10,8 @@ type SubmissionJson struct {
 }
 
 type SubmissionJsonData struct {
-	Url         string `json:"url"`
-	DraftsCount int    `json:"drafts_count"`
-	Id          string `json:"id"`
-	Name        string `json:"name"`
+	Url         string  `json:"url"`
+	DraftsCount float64 `json:"drafts_count"`
+	Id          string  `json:"id"`
+	Name        string  `json:"name"`
 }

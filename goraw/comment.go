@@ -5,9 +5,18 @@ func (c Comment) GetId() string {
 	return c.Json.Data.Things[0].Data.Name
 }
 
+func (c Comment) GetSubredditId() string {
+	return c.Json.Data.Things[0].Data.SubredditId
+}
+
 // Get the name of the author. With no u/ preppended
 func (c Comment) GetAuthor() string {
 	return c.Json.Data.Things[0].Data.Author
+}
+
+// Get the name of the author. With no u/ preppended
+func (c Comment) GetAuthorId() string {
+	return c.Json.Data.Things[0].Data.AuthorFullname
 }
 
 // Get the subreddit's name. With no r/ preppended
@@ -16,7 +25,7 @@ func (c Comment) GetSubreddit() string {
 }
 
 // Get the UNIX timestamp when the comment was created
-func (c Comment) CreatedAt() int {
+func (c Comment) CreatedAt() float64 {
 	return c.Json.Data.Things[0].Data.Created
 }
 
@@ -26,17 +35,17 @@ func (c Comment) GetBody() string {
 }
 
 // Get the score of the comment (Ups - Downs)
-func (c Comment) GetScore() int {
+func (c Comment) GetScore() float64 {
 	return c.Json.Data.Things[0].Data.Score
 }
 
 // Get the number of upvotes on the comment
-func (c Comment) GetUps() int {
+func (c Comment) GetUps() float64 {
 	return c.Json.Data.Things[0].Data.Ups
 }
 
 // Get the number of downvotes
-func (c Comment) GetDowns() int {
+func (c Comment) GetDowns() float64 {
 	return c.Json.Data.Things[0].Data.Downs
 }
 

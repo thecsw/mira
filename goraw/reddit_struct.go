@@ -1,7 +1,7 @@
 package goraw
 
 type Reddit struct {
-	Token    string `json:"access_token"`
-	Duration int    `json:"expires_in"`
+	Token    string  `json:"access_token"`
+	Duration float64 `json:"expires_in"`
 	Creds    Credentials
 }
