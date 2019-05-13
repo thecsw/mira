@@ -4,11 +4,11 @@ import (
 	"./mira"
 	"fmt"
 //	"encoding/json"
-	"time"
+//	"time"
 )
 
 func main() {
-	r := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 
 	// Testing if the token refresh actually works
 	// The default expiration is 60 minutes, I will run
@@ -37,14 +37,14 @@ func main() {
 	// }
 
 	// Comment Replies Generator
-	c, _ := r.StreamCommentReplies()
-	i := 0
-	for {
-		i++
-		msg := <- c
-		r.Reply(msg.GetId(), fmt.Sprintf("I am replying to you! i: %d", i))
-		time.Sleep(time.Second)
-	}
+	// c, _ := r.StreamCommentReplies()
+	// i := 0
+	// for {
+	// 	i++
+	// 	msg := <- c
+	// 	r.Reply(msg.GetId(), fmt.Sprintf("I am replying to you! i: %d", i))
+	// 	time.Sleep(time.Second)
+	// }
 //	ans, _ := r.SubredditUpdateSidebar("t5_jke8s", "Hello There")
 //	fmt.Println(string(ans))
 //	sub, _ := r.GetSubreddit("memeinvestor_test")
