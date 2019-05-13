@@ -34,7 +34,10 @@ func Authenticate(c *Credentials) (*Reddit, error) {
 	encoded := b64.StdEncoding.EncodeToString([]byte(raw))
 
 	// Create a request to allow customised headers
-	r, _ := http.NewRequest("POST", auth_url, strings.NewReader(form.Encode()))
+	r, err := http.NewRequest("POST", auth_url, strings.NewReader(form.Encode()))
+	if err != nil {
+		return nil, err
+	}
 	// Customise request headers
 	r.Header.Set("User-Agent", c.UserAgent)
 	r.Header.Set("Authorization", "Basic "+encoded)
@@ -44,6 +47,9 @@ func Authenticate(c *Credentials) (*Reddit, error) {
 
 	// Run the request
 	response, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
 	defer response.Body.Close()
 
 	buf := new(bytes.Buffer)
@@ -52,7 +58,7 @@ func Authenticate(c *Credentials) (*Reddit, error) {
 	auth := Reddit{}
 	json.Unmarshal(buf.Bytes(), &auth)
 	auth.Creds = *c
-	return &auth, err
+	return &auth, nil
 }
 
 // This goroutine reauthenticates the user

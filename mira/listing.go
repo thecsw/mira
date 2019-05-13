@@ -1,6 +1,6 @@
 package mira
 
-func (l* Listing) GetMessages() []ListingDataChildren {
+func (l *Listing) GetMessages() []ListingDataChildren {
 	return l.Data.Children
 }
 

@@ -4,7 +4,7 @@ import (
 	"./mira"
 	"fmt"
 //	"encoding/json"
-	"time"
+//	"time"
 )
 
 func main() {
@@ -37,12 +37,17 @@ func main() {
 	// }
 
 	// Comment Replies Generator
-	c := r.StreamCommentReplies()
-	i := 0
-	for {
-		i++
-		msg := <- c
-		r.Reply(msg.GetId(), fmt.Sprintf("I am replying to you! i: %d", i))
-		time.Sleep(time.Second)
-	}
+	// c := r.StreamCommentReplies()
+	// i := 0
+	// for {
+	// 	i++
+	// 	msg := <- c
+	// 	r.Reply(msg.GetId(), fmt.Sprintf("I am replying to you! i: %d", i))
+	// 	time.Sleep(time.Second)
+	// }
+//	ans, _ := r.SubredditUpdateSidebar("t5_jke8s", "Hello There")
+//	fmt.Println(string(ans))
+	sub, _ := r.GetSubreddit("memeinvestor_test")
+	fmt.Println(sub)
+	fmt.Println(sub.GetDescription())
 }

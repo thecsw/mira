@@ -50,6 +50,27 @@ func (c *Reddit) GetUser(name string) (Redditor, error) {
 	return user, nil
 }
 
+func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
+	target := RedditOauth + "/r/" + name + "/about"
+	sub := Subreddit{}
+	r, err := http.NewRequest("GET", target, nil)
+	if err != nil {
+		return sub, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return sub, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	json.Unmarshal(buf.Bytes(), &sub)
+	return sub, nil
+}
+
 func (c *Reddit) Submit(sr string, title string, text string) (Submission, error) {
 	target := RedditOauth + "/api/submit"
 	post := Submission{}
@@ -128,7 +149,7 @@ func (c *Reddit) Comment(submission_id, text string) (Comment, error) {
 	return comment, nil
 }
 
-func (c *Reddit) DeleteComment(comment_id string) (error) {
+func (c *Reddit) DeleteComment(comment_id string) error {
 	target := RedditOauth + "/api/del"
 	form := url.Values{}
 	form.Add("id", comment_id)
@@ -173,13 +194,13 @@ func (c *Reddit) EditComment(comment_id, text string) (Comment, error) {
 	return comment, nil
 }
 
-func (c *Reddit) Compose(to, subject, text string) (error) {
+func (c *Reddit) Compose(to, subject, text string) error {
 	target := RedditOauth + "/api/compose"
 	form := url.Values{}
 	form.Add("subject", subject)
 	form.Add("text", text)
 	form.Add("to", to)
-	form.Add("api_type", "json")	
+	form.Add("api_type", "json")
 	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
 	if err != nil {
 		return err
@@ -195,7 +216,7 @@ func (c *Reddit) Compose(to, subject, text string) (error) {
 	return nil
 }
 
-func (c *Reddit) ReadMessage(message_id string) (error) {
+func (c *Reddit) ReadMessage(message_id string) error {
 	target := RedditOauth + "/api/read_message"
 	form := url.Values{}
 	form.Add("id", message_id)
@@ -214,7 +235,7 @@ func (c *Reddit) ReadMessage(message_id string) (error) {
 	return nil
 }
 
-func (c *Reddit) ReadAllMessages() (error) {
+func (c *Reddit) ReadAllMessages() error {
 	target := RedditOauth + "/api/read_all_messages"
 	r, err := http.NewRequest("POST", target, nil)
 	if err != nil {
@@ -250,6 +271,34 @@ func (c *Reddit) ListUnreadMessages() (Listing, error) {
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &list)	
+	json.Unmarshal(buf.Bytes(), &list)
 	return list, nil
+}
+
+func (c *Reddit) SubredditUpdateSidebar(sr, text string) ([]byte, error) {
+	target := RedditOauth + "/api/site_admin"
+	form := url.Values{}
+	form.Add("sr", sr)
+	form.Add("name", "None")
+	form.Add("description", text)
+	form.Add("title", sr)
+	form.Add("wikimode", "anyone")
+	form.Add("link_type", "any")
+	form.Add("type", "public")
+	form.Add("api_type", "json")
+	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	return buf.Bytes(), nil
 }
