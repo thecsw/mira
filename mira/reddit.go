@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"fmt"
+	"strconv"
 )
 
 func (c *Reddit) Me() (Me, error) {
@@ -75,25 +77,27 @@ func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
 // Sorting options: "hot", "new", "top", "rising", "controversial", "random"
 // This function is broken currently, don't use it
 func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) ([]PostListingChild, error) {
-	target := RedditOauth + "/[r/" + sr + "]/" + sort	// This URL is incorrect - needs fixing
+	target := RedditOauth + "/r/" + sr + "/" + sort
 	listing := PostListing{}
 	form := url.Values{}
-	form.Add("limit", string(limit))
+	// You have to use strconv. string() only works for []byte
+	form.Add("limit", strconv.Itoa(limit))
 	form.Add("api_type", "json")
 	r, err := http.NewRequest("GET", target, strings.NewReader(form.Encode()))
 	if err != nil {
-		return []PostListingChild{}, err
+		return nil, err
 	}
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, err := client.Do(r)
 	if err != nil {
-		return []PostListingChild{}, err
+		return nil, err
 	}
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
+	fmt.Println(string(buf.Bytes()))
 	json.Unmarshal(buf.Bytes(), &listing)
 	return listing.GetChildren(), nil
 }
