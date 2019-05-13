@@ -71,6 +71,33 @@ func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
 	return sub, nil
 }
 
+// Get top submisssions from a subreddit up to a specified limit sorted by the given parameter
+// Sorting options: "hot", "new", "top", "rising", "controversial", "random"
+// This function is broken currently, don't use it
+func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) ([]PostListingChild, error) {
+	target := RedditOauth + "/[r/" + sr + "]/" + sort	// This URL is incorrect - needs fixing
+	listing := PostListing{}
+	form := url.Values{}
+	form.Add("limit", string(limit))
+	form.Add("api_type", "json")
+	r, err := http.NewRequest("GET", target, strings.NewReader(form.Encode()))
+	if err != nil {
+		return []PostListingChild{}, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return []PostListingChild{}, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	json.Unmarshal(buf.Bytes(), &listing)
+	return listing.GetChildren(), nil
+}
+
 func (c *Reddit) Submit(sr string, title string, text string) (Submission, error) {
 	target := RedditOauth + "/api/submit"
 	post := Submission{}
