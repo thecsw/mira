@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 // Get the ID of the submission in form "t3_..."
 func (s *Submission) GetId() string {

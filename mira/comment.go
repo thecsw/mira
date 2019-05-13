@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 // Get ID of the comment. Should be something "t1_..."
 func (c Comment) GetId() string {

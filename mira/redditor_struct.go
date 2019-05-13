@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 type Redditor struct {
 	Kind string       `json:"kind"`

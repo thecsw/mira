@@ -1,14 +1,14 @@
 package main
 
 import (
-	"./goraw"
+	"./mira"
 	"fmt"
 //	"encoding/json"
 	"time"
 )
 
 func main() {
-	r := goraw.Init(goraw.ReadCredsFromFile("login.conf"))
+	r := mira.Init(mira.ReadCredsFromFile("login.conf"))
 
 	// Testing if the token refresh actually works
 	// The default expiration is 60 minutes, I will run

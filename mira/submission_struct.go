@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 type Submission struct {
 	Json SubmissionJson `json:"json"`

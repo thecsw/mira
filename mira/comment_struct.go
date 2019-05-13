@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 type Comment struct {
 	Json CommentJson

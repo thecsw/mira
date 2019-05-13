@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 type Me struct {
 	IsEmployee              bool        `json:"is_employee"`

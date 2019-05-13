@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 // When we initialize the Reddit instance,
 // automatically start a goroutine that will

@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 // Base is the basic reddit base URL, authed is the base URL for use once authenticated
 

@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 type Reddit struct {
 	Token    string  `json:"access_token"`

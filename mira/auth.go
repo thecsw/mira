@@ -1,4 +1,4 @@
-package goraw
+package mira
 
 import (
 	"bytes"
