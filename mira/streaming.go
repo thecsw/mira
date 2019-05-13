@@ -19,7 +19,7 @@ func (r *Reddit) StreamCommentReplies() (<-chan ListingDataChildren, chan bool) 
 			un, _ := r.ListUnreadMessages()
 			for _, v := range un.GetMessages() {
 				// Only process comment replies and
-				// mark them as read. 
+				// mark them as read.
 				if v.IsCommentReply() {
 					c <- v
 					r.ReadMessage(v.GetId())
