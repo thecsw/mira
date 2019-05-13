@@ -76,6 +76,11 @@ func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
 // Get top submisssions from a subreddit up to a specified limit sorted by the given parameter
 // Sorting options: "hot", "new", "top", "rising", "controversial", "random"
 // This function is broken currently, don't use it
+
+// It works now (partially). The fmt.Println(buf.Bytes) shows that we receive a proper JSON
+// file. The problem is that it cannot Unmarshal it as the post struct does not match the JSON
+// structure. We have to fix that and we are all good. Also, if error occured, you can pass nil
+// as a slice. Then, you don't even need to allocate a []PostListingChild object in memory.
 func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) ([]PostListingChild, error) {
 	target := RedditOauth + "/r/" + sr + "/" + sort
 	listing := PostListing{}
