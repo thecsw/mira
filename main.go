@@ -3,7 +3,8 @@ package main
 import (
 	"./goraw"
 	"fmt"
-	"encoding/json"
+//	"encoding/json"
+	"time"
 )
 
 func main() {
@@ -27,11 +28,21 @@ func main() {
 	// r.Compose("Thecsw", "hello, world", "Can you see this?")
 	//	ll, _ := r.ReadAllMessages()
 	//	fmt.Println(string(ll))	
-	un, _ := r.ListUnreadMessages()
-	for i, v := range un.GetMessages() {
-		data, _ := json.Marshal(v)
-		fmt.Println(string(data))
-		fmt.Println(i, v, v.IsComment())
-		r.ReadMessage(v.GetId())
+	// un, _ := r.ListUnreadMessages()
+	// for i, v := range un.GetMessages() {
+	// 	data, _ := json.Marshal(v)
+	// 	fmt.Println(string(data))
+	// 	fmt.Println(i, v, v.IsComment())
+	// 	r.ReadMessage(v.GetId())
+	// }
+
+	// Comment Replies Generator
+	c := r.StreamCommentReplies()
+	i := 0
+	for {
+		i++
+		msg := <- c
+		r.Reply(msg.GetId(), fmt.Sprintf("I am replying to you! i: %d", i))
+		time.Sleep(time.Second)
 	}
 }
