@@ -20,7 +20,7 @@ import (
 
 func main() {
 	r := mira.Init(mira.ReadCredsFromFile("login.cong"))
-	c := r.StreamCommentReplies()
+	c, _ := r.StreamCommentReplies()
 	for {
 		msg := <- c
 		r.Reply(msg.GetId(), "I got your message!")
