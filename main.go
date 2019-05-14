@@ -22,8 +22,8 @@ func main() {
 	new_comment, _ := r.EditComment(comment.GetId(), "I Edited This!!")
 	fmt.Println(new_comment.GetBody())
 
-	posts, _ := r.GetSubredditPosts("memeeconomy", "top", 1)
-	fmt.Println(posts)
+	// posts, _ := r.GetSubredditPosts("memeeconomy", "top", 1)
+	// fmt.Println(posts)
 
 	// thecsw, _ := r.GetUser("thecsw")
 	// out, _ := json.Marshal(thecsw)

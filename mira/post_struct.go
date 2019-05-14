@@ -1,8 +1,8 @@
 package mira
 
 type PostListing struct {
-	Kind    string          `json:"kind"`
-	Data    PostListingData `json:"data"`
+	Kind string          `json:"kind"`
+	Data PostListingData `json:"data"`
 }
 
 type PostListingData struct {
@@ -10,7 +10,7 @@ type PostListingData struct {
 	Children []PostListingChild `json:"children"`
 }
 
-type PostListingChild struct{
+type PostListingChild struct {
 	Kind string `json:"kind"`
 	Data Post   `json:"post"`
 }

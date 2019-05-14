@@ -1,86 +1,90 @@
 package mira
 
 type Comment struct {
-	Json CommentJson
+	Json CommentJson `json:"json"`
 }
 
 type CommentJson struct {
-	Errors []string
-	Data   CommentJsonData
+	Errors []string        `json:"errors"`
+	Data   CommentJsonData `json:"data"`
 }
 
 type CommentJsonData struct {
-	Things []CommentJsonDataThing
+	Things []CommentJsonDataThing `json:"things"`
 }
 
 type CommentJsonDataThing struct {
-	Kind string
-	Data CommentJsonDataThingData
+	Kind string                   `json:"kind"`
+	Data CommentJsonDataThingData `json:"data"`
 }
 
 type CommentJsonDataThingData struct {
-	AuthorFlairBackgroundColor string // *
-	TotalAwardsReceived        float64
-	ApprovedAtUtc              string // *
-	Distinguished              string // *
-	ModReasonBy                string // *
-	BannedBy                   string // *
-	AuthorFlairType            string
-	RemovalReason              string // *
-	LinkId                     string
-	AuthorFlairTemplateId      string // *
-	Likes                      bool
-	Replies                    string
-	UserReports                []string
-	Saved                      bool
-	Id                         string
-	BannedAtUtc                string // *
-	ModReasonTitle             string // *
-	Gilded                     float64
-	Archived                   bool
-	NoFollow                   bool
-	Author                     string
-	RteMode                    string
-	CanModPost                 bool
-	CreatedUtc                 float64
-	SendReplies                bool
-	ParentId                   float64
-	Score                      float64
-	AuthorFullname             string
-	ApprovedBy                 string // *
-	Mod_note                   string // *
-	AllAwardings               []string
-	SubredditId                string
-	Body                       string
-	Edited                     bool
-	Gildings                   string // Probably another struct like Gilding
-	AuthorFlairCssClass        string // *
-	Name                       string
-	AuthorPatreonFlair         bool
-	Downs                      float64
-	AuthorFlairRichtext        []string
-	IsSubmitter                bool
-	CollapsedReason            string // *
-	BodyHtml                   string
-	Stickied                   bool
-	CanGild                    bool
-	Removed                    bool
-	Approved                   bool
-	AuthorFlairTextColor       string // *
-	ScoreHidden                bool
-	Permalink                  string
-	NumReports                 float64
-	Locked                     bool
-	ReportReasons              []string
-	Created                    float64
-	Subreddit                  string
-	AuthorFlairText            string // *
-	Spam                       bool
-	Collapsed                  bool
-	SubredditNamePrefixed      string
-	Controversiality           float64
-	IgnoreReports              bool
-	ModReports                 []string
-	SubredditType              string
-	Ups                        float64
+	AuthorFlairBackgroundColor string   `json:"author_flair_background_color"`
+	TotalAwardsReceived        float64  `json:"total_awards_received"`
+	ApprovedAtUtc              string   `json:"approved_at_utc"`
+	Distinguished              string   `json:"distinguished"`
+	ModReasonBy                string   `json:"mod_reason_by"`
+	BannedBy                   string   `json:"banned_by"`
+	AuthorFlairType            string   `json:"author_flair_type"`
+	RemovalReason              string   `json:"removal_reason"`
+	LinkId                     string   `json:"link_id"`
+	AuthorFlairTemplateId      string   `json:"author_flair_template_id"`
+	Likes                      bool     `json:"likes"`
+	Replies                    string   `json:"replies"`
+	UserReports                []string `json:"user_reports"`
+	Saved                      bool     `json:"saved"`
+	Id                         string   `json:"id"`
+	BannedAtUtc                string   `json:"banned_at_utc"`
+	ModReasonTitle             string   `json:"mod_reason_title"`
+	Gilded                     float64  `json:"gilded"`
+	Archived                   bool     `json:"archived"`
+	NoFollow                   bool     `json:"no_follow"`
+	Author                     string   `json:"author"`
+	RteMode                    string   `json:"rte_mode"`
+	CanModPost                 bool     `json:"can_mod_post"`
+	CreatedUtc                 float64  `json:"created_utc"`
+	SendReplies                bool     `json:"send_replies"`
+	ParentId                   float64  `json:"parent_id"`
+	Score                      float64  `json:"score"`
+	AuthorFullname             string   `json:"author_fullname"`
+	ApprovedBy                 string   `json:"approved_by"`
+	Mod_note                   string   `json:"mod_note"`
+	AllAwardings               []string `json:"all_awardings"`
+	SubredditId                string   `json:"subreddit_id"`
+	Body                       string   `json:"body"`
+	Edited                     bool     `json:"edited"`
+	Gildings                   Gilding  `json:"gildings"`
+	AuthorFlairCssClass        string   `json:"author_flair_css_class"`
+	Name                       string   `json:"name"`
+	AuthorPatreonFlair         bool     `json:"author_patreon_flair"`
+	Downs                      float64  `json:"downs"`
+	AuthorFlairRichtext        []string `json:"author_flair_richtext"`
+	IsSubmitter                bool     `json:"is_submitter"`
+	CollapsedReason            string   `json:"collapsed_reason"`
+	BodyHtml                   string   `json:"body_html"`
+	Stickied                   bool     `json:"stickied"`
+	CanGild                    bool     `json:"can_gild"`
+	Removed                    bool     `json:"removed"`
+	Approved                   bool     `json:"approved"`
+	AuthorFlairTextColor       string   `json:"author_flair_text_color"`
+	ScoreHidden                bool     `json:"score_hidden"`
+	Permalink                  string   `json:"permalink"`
+	NumReports                 float64  `json:"num_reports"`
+	Locked                     bool     `json:"locked"`
+	ReportReasons              []string `json:"report_reasons"`
+	Created                    float64  `json:"created"`
+	Subreddit                  string   `json:"subreddit"`
+	AuthorFlairText            string   `json:"author_flair_text"`
+	Spam                       bool     `json:"spam"`
+	Collapsed                  bool     `json:"collapsed"`
+	SubredditNamePrefixed      string   `json:"subreddit_name_prefixed"`
+	Controversiality           float64  `json:"controversiality"`
+	IgnoreReports              bool     `json:"ignore_reports"`
+	ModReports                 []string `json:"mod_reports"`
+	SubredditType              string   `json:"subreddit_type"`
+	Ups                        float64  `json:"ups"`
+}
+
+type Gilding struct {
+	Gid map[string]int `json:"gid"`
 }

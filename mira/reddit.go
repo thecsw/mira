@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
-	"strings"
-	"fmt"
 	"strconv"
+	"strings"
 )
 
 func (c *Reddit) Me() (Me, error) {
@@ -102,7 +101,6 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) ([]PostLis
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
-	fmt.Println(string(buf.Bytes()))
 	json.Unmarshal(buf.Bytes(), &listing)
 	return listing.GetChildren(), nil
 }
@@ -288,9 +286,9 @@ func (c *Reddit) ReadAllMessages() error {
 	return nil
 }
 
-func (c *Reddit) ListUnreadMessages() (Listing, error) {
+func (c *Reddit) ListUnreadMessages() (CommentListing, error) {
 	target := RedditOauth + "/message/unread"
-	list := Listing{}
+	list := CommentListing{}
 	form := url.Values{}
 	form.Add("mark", "true")
 	r, err := http.NewRequest("GET", target, strings.NewReader(form.Encode()))

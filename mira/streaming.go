@@ -10,8 +10,8 @@ const (
 
 // c is the channel with all unread messages
 // stop is the channal to stop the stream. Do stop <- true to stop the loop
-func (r *Reddit) StreamCommentReplies() (<-chan ListingDataChildren, chan bool) {
-	c := make(chan ListingDataChildren, 25)
+func (r *Reddit) StreamCommentReplies() (<-chan CommentListingDataChildren, chan bool) {
+	c := make(chan CommentListingDataChildren, 25)
 	stop := make(chan bool, 1)
 	go func() {
 		for {

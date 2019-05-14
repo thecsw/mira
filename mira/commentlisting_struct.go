@@ -1,23 +1,23 @@
 package mira
 
-type Listing struct {
-	Data ListingData `json:"data"`
+type CommentListing struct {
+	Data CommentListingData `json:"data"`
 }
 
-type ListingData struct {
+type CommentListingData struct {
 	Modhash  string                `json:"modhash"`
 	Dist     float64               `json:"dist"`
-	Children []ListingDataChildren `json:"children"`
+	Children []CommentListingDataChildren `json:"children"`
 	After    string                `json:"after"`
 	Before   string                `json:"before"`
 }
 
-type ListingDataChildren struct {
+type CommentListingDataChildren struct {
 	Kind string                  `json:"kind"`
-	Data ListingDataChildrenData `json:"data"`
+	Data CommentListingDataChildrenData `json:"data"`
 }
 
-type ListingDataChildrenData struct {
+type CommentListingDataChildrenData struct {
 	FirstMessage          string  `json:"first_message"`
 	FirstMessageName      string  `json:"first_message_name"`
 	Subreddit             string  `json:"subreddit"`
