@@ -1,8 +1,8 @@
 package mira
 
 import (
-	"testing"
 	"encoding/json"
+	"testing"
 )
 
 func BenchmarkCreateMe(b *testing.B) {
