@@ -13,10 +13,10 @@ type PostListingData struct {
 
 type PostListingChild struct {
 	Kind string `json:"kind"`
-	Data Post   `json:"post"`
+	Data PostListingChildData   `json:"data"`
 }
 
-type Post struct {
+type PostListingChildData struct {
 	ApprovedAtUtc              float64            `json:"approved_at_utc"`
 	Subreddit                  string             `json:"subreddit"`
 	Selftext                   string             `json:"selftext"`
