@@ -6,7 +6,7 @@ import (
 
 const (
 	// Comment Replies are more frequent, every 8 seconds should be fine
-	CommentlistInterval = 8
+	CommentListInterval = 8
 	// Submissions are a bit more rare. To save the API limit, every 15 seconds should be enough
 	PostListInterval = 16
 	// Just to keep everything, size of 4 rounds up good
