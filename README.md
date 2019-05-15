@@ -3,11 +3,11 @@
 MIRA is a Reddit Api Wrapper written in beautiful Go. This is a subproject
 of a bigger project MemeInvestor_bot. 
 
-IT is super simple to use the bot as we also provide you
+It is super simple to use the bot as we also provide you
 with simple but fully extensive structs. We utilize the 
 best features of Go, such as closures, channels, goroutines, garbage collection, etc.
 
-Currently, `mira` is a project that jsut began its life. We still have many new Reddit
+Currently, `mira` is a project that just began its life. We still have many new Reddit
 endpoints to cover. We have the basic functionality implemented, like streaming comment
 replies, new submissions. Comment, post, edit, reply, and delete options for our
 instances.
@@ -20,13 +20,14 @@ of the structs.
 
 **Type Prefixes**
 
-| t1 | Comment                          |
-|----|----------------------------------|
-| t2 | Redditor                         |
-| t3 | Submission, PostListing contents |
-| t4 | Message (NOT IMPLEMENTED)        |
-| t5 | Subreddit                        |
-| t6 | Award (NOT IMPLEMENTED)          |
+| Prefix | Type                             |
+|--------|----------------------------------|
+|   t1   | Comment                          |
+|   t2   | Redditor                         |
+|   t3   | Submission, PostListing contents |
+|   t4   | Message (NOT IMPLEMENTED)        |
+|   t5   | Subreddit                        |
+|   t6   | Award (NOT IMPLEMENTED)          |
 
 ## Config file
 
@@ -79,7 +80,7 @@ import (
 )
 
 func main() {
-	r, _ := mira.Init(mira.ReadCredsFromFile("login.cong"))
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	c, _ := r.StreamNewPosts("subredditname")
 	for {
 		post := <- c
