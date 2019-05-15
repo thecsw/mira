@@ -12,7 +12,7 @@ type Me struct {
 	Subreddit               Subreddit_s `json:"subreddit"`
 	IsSponsor               bool        `json:"is_sponsor"`
 	GoldExpiration          float64     `json:"gold_expiration"`
-	HasGoldSubscription     bool        `json:"has_gold_subscription`
+	HasGoldSubscription     bool        `json:"has_gold_subscription"`
 	NumFriends              float64     `json:"num_friends"`
 	Features                MeFeatures  `json:"features"`
 	HasAndroidSubscription  bool        `json:"has_android_subscription"`
@@ -67,7 +67,7 @@ type MeFeatures struct {
 	Sequence                                  bool         `json:"sequence"`
 	MwebXpromoRevampV2                        MeSubFeature `json:"mweb_xpromo_revamp_v2"`
 	MwebXpromoFloat64erstitialCommentsIos     bool         `json:"mweb_xpromo_float64erstitial_comments_ios"`
-	ChatReddarReports                         bool         `json:chat_reddar_reports`
+	ChatReddarReports                         bool         `json:"chat_reddar_reports"`
 	ChatRollout                               bool         `json:"chat_rollout"`
 	MwebXpromoFloat64erstitialCommentsAndroid bool         `json:"mwev_xpromo_float64erstitial_comments_android"`
 	ChatGroutRollout                          bool         `json:"chat_group_rollout"`
