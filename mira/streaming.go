@@ -5,9 +5,12 @@ import (
 )
 
 const (
-	CommentListInterval = 8
-	PostListInterval = 5
-	PostListSlice = 3
+	// Comment Replies are more frequent, every 8 seconds should be fine
+	Commentlistinterval = 8
+	// Submissions are a bit more rare. To save the API limit, every 15 seconds should be enough
+	PostListInterval = 16
+	// Just to keep everything, size of 4 rounds up good
+	PostListSlice = 4
 )
 
 // c is the channel with all unread messages
@@ -36,18 +39,18 @@ func (r *Reddit) StreamCommentReplies() (<-chan CommentListingDataChildren, chan
 	return c, stop
 }
 
-func (r *Reddit) StreamNewPosts(sr string) (<-chan Post, chan bool) {
-	c := make(chan Post)
+func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) {
+	c := make(chan PostListingChild)
 	stop := make(chan bool, 1)
 	go func(){
 		LastTime := time.Now().UTC().Unix()
 		for {
 			stop <- false
 			new, _ := r.GetSubredditPosts(sr, "new", PostListSlice)
-			for _, s := range new {
+			for _, s := range new.GetChildren() {
 				if s.GetTimeCreated() > float64(LastTime) {
-					c <- s.Data
-					LastTime = s.GetTimeCreated()
+					c <- s
+					LastTime = time.Now().UTC().Unix()
 				}
 			}
 			time.Sleep(PostListInterval * time.Second)
