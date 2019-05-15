@@ -75,12 +75,7 @@ func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
 // Get top submisssions from a subreddit up to a specified limit sorted by the given parameter
 // Sorting options: "hot", "new", "top", "rising", "controversial", "random"
 // This function is broken currently, don't use it
-
-// It works now (partially). The fmt.Println(buf.Bytes) shows that we receive a proper JSON
-// file. The problem is that it cannot Unmarshal it as the post struct does not match the JSON
-// structure. We have to fix that and we are all good. Also, if error occured, you can pass nil
-// as a slice. Then, you don't even need to allocate a []PostListingChild object in memory.
-func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) ([]PostListingChild, error) {
+func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) (PostListing, error) {
 	target := RedditOauth + "/r/" + sr + "/" + sort
 	listing := PostListing{}
 	form := url.Values{}
@@ -89,20 +84,20 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) ([]PostLis
 	form.Add("api_type", "json")
 	r, err := http.NewRequest("GET", target, strings.NewReader(form.Encode()))
 	if err != nil {
-		return nil, err
+		return listing, err
 	}
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, err := client.Do(r)
 	if err != nil {
-		return nil, err
+		return listing, err
 	}
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal(buf.Bytes(), &listing)
-	return listing.GetChildren(), nil
+	return listing, nil
 }
 
 func (c *Reddit) Submit(sr string, title string, text string) (Submission, error) {
