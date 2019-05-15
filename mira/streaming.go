@@ -47,7 +47,7 @@ func (r *Reddit) StreamNewPosts(sr string) (<-chan Post, chan bool) {
 			for _, s := range new {
 				if s.GetTimeCreated() > float64(LastTime) {
 					c <- s.Data
-					LastTime = time.Now().UTC().Unix()
+					LastTime = s.GetTimeCreated()
 				}
 			}
 			time.Sleep(PostListInterval * time.Second)
