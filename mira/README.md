@@ -7,6 +7,43 @@ IT is super simple to use the bot as we also provide you
 with simple but fully extensive structs. We utilize the 
 best features of Go, such as closures, channels, goroutines, garbage collection, etc.
 
+Currently, `mira` is a project that jsut began its life. We still have many new Reddit
+endpoints to cover. We have the basic functionality implemented, like streaming comment
+replies, new submissions. Comment, post, edit, reply, and delete options for our
+instances.
+
+Two quick notes: all actions should be done via `Reddit` struct, I thought it would make it
+simpler to work with. Secondly, all actions require the objects full `thing_id`, so you have
+to use `GetId()` to get that id. Every struct has that method implemented and it will return
+a string in the form of `t[1-6]_[a-z0-9]{5}`. Refer to the following table for the classifications
+of the structs.
+
+**Type Prefixes**
+
+| t1 | Comment                          |
+|----|----------------------------------|
+| t2 | Redditor                         |
+| t3 | Submission, PostListing contents |
+| t4 | Message (NOT IMPLEMENTED)        |
+| t5 | Subreddit                        |
+| t6 | Award (NOT IMPLEMENTED)          |
+
+## Config file
+
+The config file structure is very simple:
+
+```
+CLIENT_ID =
+CLIENT_SECRET =
+USERNAME =
+PASSWORD =
+USER_AGENT =
+```
+
+## Examples
+
+### Streaming comment replies
+
 Below is an example on how to make a simple bot that 
 listens to a stream of comment replies and replies.
 
@@ -28,16 +65,55 @@ func main() {
 }
 ```
 
-## Config file
+### Streaming new submissions
 
-The config file structure is very simple:
+Streaming new submissions is very simple too. You can do it the same way
+as streaming comment replies.
 
+``` go
+package main
+
+import (
+	"github.com/thecsw/mira"
+	"fmt"
+)
+
+func main() {
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.cong"))
+	c, _ := r.StreamNewPosts("subredditname")
+	for {
+		post := <- c
+		r.Comment(post.GetId(), "I saw your submission!")
+	}
+}
 ```
-CLIENT_ID =
-CLIENT_SECRET =
-USERNAME =
-PASSWORD =
-USER_AGENT =
+
+### Submitting, Commenting, Replying, and Editing
+
+It is very easy to post a submission, comment on it, reply to a message, or
+edit a comment.
+
+``` go
+package main
+
+import (
+	"github.com/thecsw/mira"
+	"fmt"
+)
+
+func main() {
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	// Make a submission
+	post, _ := r.Submit("memeinvestor_test", "mypost", "my text")
+	// Comment on our new submission
+	comment, _ := r.Comment(post.GetId(), "My First Comment")
+	// Reply to our own comment
+	reply, _ := r.Reply(comment.GetId(), "My Reply to the First Comment")
+	// Delete the reply
+	r.DeleteComment(reply.GetId())
+	// Edit the first comment
+	new_comment, _ := r.EditComment(comment.GetId(), "I Edited This!!")
+	// Show the comment's body
+	fmt.Println(new_comment.GetBody())
+}
 ```
-
-
