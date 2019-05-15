@@ -42,7 +42,7 @@ func (r *Reddit) StreamCommentReplies() (<-chan CommentListingDataChildren, chan
 func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) {
 	c := make(chan PostListingChild)
 	stop := make(chan bool, 1)
-	go func(){
+	go func() {
 		LastTime := time.Now().UTC().Unix()
 		for {
 			stop <- false

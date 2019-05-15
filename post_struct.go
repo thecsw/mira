@@ -12,8 +12,8 @@ type PostListingData struct {
 }
 
 type PostListingChild struct {
-	Kind string `json:"kind"`
-	Data PostListingChildData   `json:"data"`
+	Kind string               `json:"kind"`
+	Data PostListingChildData `json:"data"`
 }
 
 type PostListingChildData struct {
@@ -31,7 +31,7 @@ type PostListingChildData struct {
 	Hidden                     bool               `json:"hidden"`
 	Pwls                       float64            `json:"pwls"`
 	LinkFlairCssClass          string             `json:"link_flair_css_class"`
-	Downs                  float64            `json:"downs"`
+	Downs                      float64            `json:"downs"`
 	ThumbnailHeight            float64            `json:"thumbnail_height"`
 	HideScore                  bool               `json:"hide_score"`
 	Name                       string             `json:"name"`
@@ -39,7 +39,7 @@ type PostListingChildData struct {
 	LinkFlairTextColor         string             `json:"link_flair_text_color"`
 	AuthorFlairBackgroundColor string             `json:"author_flair_background_color"`
 	SubredditType              string             `json:"subreddit_type"`
-	Ups                    float64            `json:"ups"`
+	Ups                        float64            `json:"ups"`
 	TotalAwardsReceived        float64            `json:"total_awards_received"`
 	MediaEmbed                 []string           `json:"media_embed"`
 	ThumbnailWidth             float64            `json:"thumbnail_width"`

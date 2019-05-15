@@ -17,7 +17,6 @@ func TestGetPostListingId(t *testing.T) {
 	}
 }
 
-
 func TestGetSubreddit(t *testing.T) {
 	post := PostListing{}
 	json.Unmarshal([]byte(postListingExampleJson), &post)
@@ -41,4 +40,3 @@ func TestGetTitle(t *testing.T) {
 		)
 	}
 }
-
