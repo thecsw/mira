@@ -117,3 +117,49 @@ func main() {
 	fmt.Println(new_comment.GetBody())
 }
 ```
+
+### Composing a message
+
+We can also send a message to another user!
+
+``` go
+package main
+
+import (
+	"github.com/thecsw/mira"
+	"fmt"
+)
+
+func main() {
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	user, _ := r.GetUser("thecsw")
+	r.Compose("thecsw", "my subject", "hello, world")
+	// or
+	r.Compose(user.GetName(), "my subject", "hello, world")
+}
+```
+
+### Going through hot, new, top, rising, controversial, and random
+
+You can also traverse through a number of submissions using
+one of our methods.
+
+``` go
+package main
+
+import (
+	"github.com/thecsw/mira"
+	"fmt"
+)
+
+func main() {
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	sort := "top"
+	var limit int = 25
+	subs, _ := r.GetSubredditPosts("subredditname", sort, limit)
+	
+	for _, v := range subs.GetChildren() {
+		fmt.Println("Submission Title: ", v.GetTitle())
+	}
+}
+```
