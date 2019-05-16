@@ -46,12 +46,16 @@ func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) 
 		LastTime := time.Now().UTC().Unix()
 		for {
 			stop <- false
+			NewPosts := false
 			new, _ := r.GetSubredditPosts(sr, "new", PostListSlice)
 			for _, s := range new.GetChildren() {
 				if s.GetTimeCreated() > float64(LastTime) {
 					c <- s
-					LastTime = time.Now().UTC().Unix()
+					NewPosts = true
 				}
+			}
+			if NewPosts {
+				LastTime = new.GetChildren()[0].GetTimeCreated()
 			}
 			time.Sleep(PostListInterval * time.Second)
 			if <-stop {
