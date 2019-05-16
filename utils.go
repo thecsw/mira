@@ -3,6 +3,7 @@ package mira
 import (
 	"io/ioutil"
 	"regexp"
+	"os"
 )
 
 func ReadCredsFromFile(file string) Credentials {
@@ -22,4 +23,16 @@ func ReadCredsFromFile(file string) Credentials {
 		UserAgent.FindStringSubmatch(s)[1],
 	}
 	return creds
+}
+
+// Assuming that they all exist. Probably a bad idea. We can
+// expand it later and do a more aggressive error handling.
+func ReadCredsFromEnv() Credentials {
+	return Credentials{
+		os.Getenv("BOT_CLIENT_ID"),
+		os.Getenv("BOT_CLIENT_SECRET"),
+		os.Getenv("BOT_USERNAME"),
+		os.Getenv("BOT_PASSWORD"),
+		os.Getenv("BOT_USER_AGENT"),
+	}
 }
