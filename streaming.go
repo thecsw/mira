@@ -55,7 +55,7 @@ func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) 
 				}
 			}
 			if NewPosts {
-				LastTime = new.GetChildren()[0].GetTimeCreated()
+				LastTime = int64(new.GetChildren()[0].GetTimeCreated())
 			}
 			time.Sleep(PostListInterval * time.Second)
 			if <-stop {
