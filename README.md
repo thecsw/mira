@@ -1,5 +1,7 @@
 # MIRA or Meme Investor Reddit Api
 
+For full documentation, please see the [Godoc page](https://godoc.org/github.com/thecsw/mira)
+
 MIRA is a Reddit Api Wrapper written in beautiful Go. This is a subproject
 of a bigger project MemeInvestor_bot. 
 
@@ -57,7 +59,7 @@ import (
 )
 
 func main() {
-	r, _ := mira.Init(mira.ReadCredsFromFile("login.cong"))
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	c, _ := r.StreamCommentReplies()
 	for {
 		msg := <- c
@@ -133,9 +135,10 @@ import (
 
 func main() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
-	user, _ := r.GetUser("thecsw")
+
 	r.Compose("thecsw", "my subject", "hello, world")
 	// or
+	user, _ := r.GetUser("thecsw")
 	r.Compose(user.GetName(), "my subject", "hello, world")
 }
 ```
