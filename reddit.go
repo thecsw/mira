@@ -227,6 +227,52 @@ func (c *Reddit) DeleteComment(comment_id string) error {
 	return nil
 }
 
+func (c *Reddit) Approve(comment_id string) error {
+	target := RedditOauth + "/api/approve"
+	form := url.Values{}
+	form.Add("id", comment_id)
+	form.Add("api_type", "json")
+	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
+	if err != nil {
+		return err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	return nil
+}
+
+func (c *Reddit) Distinguish(comment_id string, how string, sticky bool) error {
+	st := "false"
+	if sticky {
+		st = "true"
+	}
+	target := RedditOauth + "/api/distinguish"
+	form := url.Values{}
+	form.Add("id", comment_id)
+	form.Add("how", how)
+	form.Add("sticky", st)
+	form.Add("api_type", "json")
+	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
+	if err != nil {
+		return err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	return nil
+}
+
 func (c *Reddit) EditComment(comment_id, text string) (Comment, error) {
 	target := RedditOauth + "/api/editusertext"
 	comment := Comment{}
