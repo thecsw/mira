@@ -5,7 +5,7 @@ import (
 	//	"fmt"
 )
 
-const (
+var (
 	// Comment Replies are more frequent, every 8 seconds should be fine
 	CommentListInterval = 8
 	// Submissions are a bit more rare. To save the API limit, every 15 seconds should be enough
