@@ -52,8 +52,8 @@ func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) 
 			if len(s) > 0 {
 				last = s[0].GetId()
 			}
-			for i := len(new.GetChildren()) - 1; i >= 0; i-- {
-				c <- s[i]
+			for i, _ := range s {
+				c <- s[len(s)-i-1]
 			}
 			time.Sleep(PostListInterval * time.Second)
 			if <-stop {
