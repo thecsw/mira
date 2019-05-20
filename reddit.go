@@ -76,13 +76,9 @@ func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
 // Sorting options: "hot", "new", "top", "rising", "controversial", "random"
 // This function is broken currently, don't use it
 func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) (PostListing, error) {
-	target := RedditOauth + "/r/" + sr + "/" + sort
+	target := RedditOauth + "/r/" + sr + "/" + sort + ".json" + "?limit=" + strconv.Itoa(limit)
 	listing := PostListing{}
-	form := url.Values{}
-	// You have to use strconv. string() only works for []byte
-	form.Add("limit", strconv.Itoa(limit))
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("GET", target, strings.NewReader(form.Encode()))
+	r, err := http.NewRequest("GET", target, nil)
 	if err != nil {
 		return listing, err
 	}
