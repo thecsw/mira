@@ -100,6 +100,30 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) (PostListi
 	return listing, nil
 }
 
+// Get top submisssions from a subreddit up to a specified limit sorted by the given parameter `after`
+// Sorting options: "hot", "new", "top", "rising", "controversial", "random"
+// This function is broken currently, don't use it
+func (c *Reddit) GetSubredditPostsAfter(sr string, sort string, last string, limit int) (PostListing, error) {
+	target := RedditOauth + "/r/" + sr + "/" + sort + ".json" + "?limit=" + strconv.Itoa(limit) + "&before=" + last
+	listing := PostListing{}
+	r, err := http.NewRequest("GET", target, nil)
+	if err != nil {
+		return listing, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return listing, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	json.Unmarshal(buf.Bytes(), &listing)
+	return listing, nil
+}
+
 func (c *Reddit) Submit(sr string, title string, text string) (Submission, error) {
 	target := RedditOauth + "/api/submit"
 	post := Submission{}

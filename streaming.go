@@ -2,15 +2,16 @@ package mira
 
 import (
 	"time"
+	//	"fmt"
 )
 
 const (
 	// Comment Replies are more frequent, every 8 seconds should be fine
 	CommentListInterval = 8
 	// Submissions are a bit more rare. To save the API limit, every 15 seconds should be enough
-	PostListInterval = 16
-	// Just to keep everything, size of 4 rounds up good
-	PostListSlice = 4
+	PostListInterval = 10
+	// Just to keep everything, size of 8 rounds up good
+	PostListSlice = 8
 )
 
 // c is the channel with all unread messages
@@ -42,16 +43,17 @@ func (r *Reddit) StreamCommentReplies() (<-chan CommentListingDataChildren, chan
 func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) {
 	c := make(chan PostListingChild)
 	stop := make(chan bool, 1)
+	last := ""
 	go func() {
-		LastTime := time.Now().UTC().Unix()
 		for {
 			stop <- false
-			new, _ := r.GetSubredditPosts(sr, "new", PostListSlice)
-			for _, s := range new.GetChildren() {
-				if s.GetTimeCreated() > float64(LastTime) {
-					c <- s
-					LastTime = time.Now().UTC().Unix()
-				}
+			new, _ := r.GetSubredditPostsAfter(sr, "new", last, PostListSlice)
+			s := new.GetChildren()
+			if len(s) > 0 {
+				last = s[0].GetId()
+			}
+			for i := len(new.GetChildren()) - 1; i >= 0; i-- {
+				c <- s[i]
 			}
 			time.Sleep(PostListInterval * time.Second)
 			if <-stop {

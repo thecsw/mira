@@ -2,8 +2,8 @@ package mira
 
 import (
 	"io/ioutil"
-	"regexp"
 	"os"
+	"regexp"
 )
 
 func ReadCredsFromFile(file string) Credentials {

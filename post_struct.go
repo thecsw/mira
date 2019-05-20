@@ -12,8 +12,10 @@ type PostListingData struct {
 }
 
 type PostListingChild struct {
-	Kind string               `json:"kind"`
-	Data PostListingChildData `json:"data"`
+	Kind   string               `json:"kind"`
+	Data   PostListingChildData `json:"data"`
+	After  string               `json:"after"`
+	Before string               `json:"before"`
 }
 
 type PostListingChildData struct {
