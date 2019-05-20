@@ -10,6 +10,7 @@ func Init(c Credentials) (*Reddit, error) {
 	if err != nil {
 		return nil, err
 	}
+	auth.SetDefault()
 	go auth.auto_refresh()
 	return auth, nil
 }

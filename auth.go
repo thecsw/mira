@@ -76,3 +76,11 @@ func (c *Reddit) update_creds() {
 	temp, _ := Authenticate(&c.Creds)
 	*c = *temp
 }
+
+func (c *Reddit) SetDefault() {
+	c.Stream = Streaming{
+		8,
+		10,
+		8,
+	}
+}
