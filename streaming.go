@@ -33,7 +33,11 @@ func (r *Reddit) StreamCommentReplies() (<-chan CommentListingDataChildren, chan
 func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) {
 	c := make(chan PostListingChild, 25)
 	stop := make(chan bool, 1)
+	anchor, _ := r.GetSubredditPosts(sr, "new", "hour", 1)
 	last := ""
+	if len(anchor.GetChildren()) > 0 {
+		last = anchor.GetChildren()[0].GetId()
+	}
 	go func() {
 		for {
 			stop <- false
