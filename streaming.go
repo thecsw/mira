@@ -41,7 +41,7 @@ func (r *Reddit) StreamCommentReplies() (<-chan CommentListingDataChildren, chan
 }
 
 func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) {
-	c := make(chan PostListingChild)
+	c := make(chan PostListingChild, 25)
 	stop := make(chan bool, 1)
 	last := ""
 	go func() {
