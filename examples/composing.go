@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/thecsw/mira"
-	"fmt"
 )
 
 func main() {

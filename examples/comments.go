@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/thecsw/mira"
 	"fmt"
+
+	"github.com/thecsw/mira"
 )
 
 func main() {
