@@ -72,11 +72,15 @@ func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
 	return sub, nil
 }
 
-// Get top submisssions from a subreddit up to a specified limit sorted by the given parameter
+// Get submisssions from a subreddit up to a specified limit sorted by the given parameter
+//
 // Sorting options: "hot", "new", "top", "rising", "controversial", "random"
-// This function is broken currently, don't use it
-func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) (PostListing, error) {
-	target := RedditOauth + "/r/" + sr + "/" + sort + ".json" + "?limit=" + strconv.Itoa(limit)
+//
+// Time options: "all", "year", "month", "week", "day", "hour"
+//
+// Limit is any numerical value, so 0 <= limit <= 100
+func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit int) (PostListing, error) {
+	target := RedditOauth + "/r/" + sr + "/" + sort + ".json" + "?limit=" + strconv.Itoa(limit) + "&t=" + tdur
 	listing := PostListing{}
 	r, err := http.NewRequest("GET", target, nil)
 	if err != nil {
@@ -96,9 +100,14 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, limit int) (PostListi
 	return listing, nil
 }
 
-// Get top submisssions from a subreddit up to a specified limit sorted by the given parameter `after`
+// Get submisssions from a subreddit up to a specified limit sorted by the given parameters
+// and with specified anchor
+//
 // Sorting options: "hot", "new", "top", "rising", "controversial", "random"
-// This function is broken currently, don't use it
+//
+// Limit is any numerical value, so 0 <= limit <= 100
+//
+// Anchor options are submissions full thing, for example: t3_bqqwm3
 func (c *Reddit) GetSubredditPostsAfter(sr string, sort string, last string, limit int) (PostListing, error) {
 	target := RedditOauth + "/r/" + sr + "/" + sort + ".json" + "?limit=" + strconv.Itoa(limit) + "&before=" + last
 	listing := PostListing{}
