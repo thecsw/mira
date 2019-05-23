@@ -1,11 +1,19 @@
 package mira
 
-func (l *CommentListing) GetMessages() []CommentListingDataChildren {
+func (l *CommentListing) GetChildren() []CommentListingDataChildren {
 	return l.Data.Children
 }
 
 func (ldc *CommentListingDataChildren) GetId() string {
 	return ldc.Data.Name
+}
+
+func (ldc *CommentListingDataChildren) GetParentId() string {
+	return ldc.Data.ParentId
+}
+
+func (ldc *CommentListingDataChildren) IsRoot() bool {
+	return string(ldc.Data.ParentId[1]) == "3"
 }
 
 func (ldc *CommentListingDataChildren) GetBody() string {

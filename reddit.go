@@ -30,6 +30,49 @@ func (c *Reddit) Me() (Me, error) {
 	return user, nil
 }
 
+func (c *Reddit) GetComment(id string) (CommentListingDataChildren, error) {
+	target := RedditOauth + "/api/info.json?id=" + id
+	list := CommentListing{}
+	temp := CommentListingDataChildren{}
+	r, err := http.NewRequest("GET", target, nil)
+	if err != nil {
+		return temp, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return temp, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	json.Unmarshal(buf.Bytes(), &list)
+	return list.GetChildren()[0], nil
+}
+
+func (c *Reddit) GetSubmission(id string) (PostListing, error) {
+	target := RedditOauth + "/api/info.json?id=" + id
+	list := PostListing{}
+	r, err := http.NewRequest("GET", target, nil)
+	if err != nil {
+		return list, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return list, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	json.Unmarshal(buf.Bytes(), &list)
+	return list, nil
+}
+
 func (c *Reddit) GetUser(name string) (Redditor, error) {
 	target := RedditOauth + "/user/" + name + "/about"
 	user := Redditor{}
