@@ -12,7 +12,7 @@ import (
 )
 
 func (c *Reddit) Me() (Me, error) {
-	target := RedditApiMe
+	target := RedditOauth + "/api/v1/me"
 	user := Me{}
 	r, err := http.NewRequest("GET", target, nil)
 	if err != nil {

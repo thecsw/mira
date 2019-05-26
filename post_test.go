@@ -2,12 +2,14 @@ package mira
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"testing"
 )
 
 func TestGetPostListingId(t *testing.T) {
 	post := PostListing{}
-	json.Unmarshal([]byte(postListingExampleJson), &post)
+	data, _ := ioutil.ReadFile("./tests/postlisting.json")
+	json.Unmarshal(data, &post)
 	if v := post.GetChildren()[0].GetId(); v != `t3_bev1v7` {
 		t.Error(
 			"For GetId()",
@@ -19,7 +21,8 @@ func TestGetPostListingId(t *testing.T) {
 
 func TestGetSubreddit(t *testing.T) {
 	post := PostListing{}
-	json.Unmarshal([]byte(postListingExampleJson), &post)
+	data, _ := ioutil.ReadFile("./tests/postlisting.json")
+	json.Unmarshal(data, &post)
 	if v := post.GetChildren()[0].GetSubreddit(); v != `MemeEconomy` {
 		t.Error(
 			"For GetSubreddit()",
@@ -31,7 +34,8 @@ func TestGetSubreddit(t *testing.T) {
 
 func TestGetTitle(t *testing.T) {
 	post := PostListing{}
-	json.Unmarshal([]byte(postListingExampleJson), &post)
+	data, _ := ioutil.ReadFile("./tests/postlisting.json")
+	json.Unmarshal(data, &post)
 	if v := post.GetChildren()[1].GetTitle(); v != `Slow it down a bit, and invest here for THICC profits` {
 		t.Error(
 			"For GetTitle()",
