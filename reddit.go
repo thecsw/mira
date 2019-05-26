@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"errors"
+	"fmt"
 )
 
 func (c *Reddit) Me() (Me, error) {
@@ -71,6 +73,65 @@ func (c *Reddit) GetSubmission(id string) (PostListing, error) {
 	buf.ReadFrom(response.Body)
 	json.Unmarshal(buf.Bytes(), &list)
 	return list, nil
+}
+
+// This function will return the submission id of a comment
+//
+// Comment id has form of t1_... where submission is prefixed with t3_...
+//
+// Comment structures in themselves do not have submission id included,
+// they only have a parent_id field that points to a parent comment or a
+// submission. If it does not point directly at the submission, we need to
+// make iterative calls until we bump into an id that fits the submission
+// prefix. It may take several calls.
+//
+// For example:
+//
+// - If comment is first-level, we make one call to get the object and
+// extract the submission id. If you already have a Go struct at hand,
+// please just invoke .GetParentId() to get the parent id
+//
+// - If comment is second-level, it would take two calls to extact the
+// submission id. If you want to save a call, you can pass a parent_id
+// instead that would take 1 call instead of 2.
+//
+// - If comment is N-level, it would take N calls. If you aleady have an
+// object, just pass in its object, so it would take N-1 calls.
+//
+// NOTE: If any error occurs, the method will return on error object.
+// If it takes more than 12 calls, the function bails out.
+func (c *Reddit) GetSubmissionFromComment(comment_id string) (string, error) {
+	current := comment_id
+	// Not a comment passed
+	if string(current[1]) != "1" {
+		return "", errors.New("The passed ID is not a comment.")
+	}
+	target := RedditOauth + "/api/info.json?id="
+	temp := CommentListing{}
+	tries := 0
+	for string(current[1]) != "3" {
+		r, err := http.NewRequest("GET", target+current, nil)
+		if err != nil {
+			return "", err
+		}
+		r.Header.Set("User-Agent", c.Creds.UserAgent)
+		r.Header.Set("Authorization", "bearer "+c.Token)
+		client := &http.Client{}
+		response, err := client.Do(r)
+		if err != nil {
+			return "", err
+		}
+		defer response.Body.Close()
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(response.Body)
+		json.Unmarshal(buf.Bytes(), &temp)
+		current = temp.Data.Children[0].GetParentId()
+		tries++
+		if tries > c.Values.GetSubmissionFromCommentTries {
+			return "", errors.New(fmt.Sprintf("Exceeded the maximum number of iterations: %v", c.Values.GetSubmissionFromCommentTries))
+		}
+	}
+	return current, nil
 }
 
 func (c *Reddit) GetUser(name string) (Redditor, error) {

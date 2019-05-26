@@ -44,7 +44,7 @@ type CommentJsonDataThingData struct {
 	CanModPost                 bool     `json:"can_mod_post"`
 	CreatedUtc                 float64  `json:"created_utc"`
 	SendReplies                bool     `json:"send_replies"`
-	ParentId                   float64  `json:"parent_id"`
+	ParentId                   string  `json:"parent_id"`
 	Score                      float64  `json:"score"`
 	AuthorFullname             string   `json:"author_fullname"`
 	ApprovedBy                 string   `json:"approved_by"`

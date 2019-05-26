@@ -9,6 +9,11 @@ func (c Comment) GetSubredditId() string {
 	return c.Json.Data.Things[0].Data.SubredditId
 }
 
+// Get ID of the comment. Should be something "t1_..."
+func (c Comment) GetParentId() string {
+	return c.Json.Data.Things[0].Data.ParentId
+}
+
 // Get the name of the author. With no u/ preppended
 func (c Comment) GetAuthor() string {
 	return c.Json.Data.Things[0].Data.Author
