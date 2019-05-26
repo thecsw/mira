@@ -79,8 +79,11 @@ func (c *Reddit) update_creds() {
 
 func (c *Reddit) SetDefault() {
 	c.Stream = Streaming{
-		8,
-		10,
-		8,
+		CommentListInterval: 8,
+		PostListInterval:    10,
+		PostListSlice:       8,
+	}
+	c.Values = RedditVals{
+		GetSubmissionFromCommentTries: 12,
 	}
 }

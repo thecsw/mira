@@ -9,7 +9,7 @@ type Reddit struct {
 	Duration float64 `json:"expires_in"`
 	Creds    Credentials
 	Stream   Streaming
-	Values RedditVals
+	Values   RedditVals
 }
 
 type Streaming struct {

@@ -3,12 +3,12 @@ package mira
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"errors"
-	"fmt"
 )
 
 func (c *Reddit) Me() (Me, error) {
