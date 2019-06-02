@@ -1,6 +1,7 @@
 package mira
 
 type CommentListing struct {
+	Kind string             `json:"kind"`
 	Data CommentListingData `json:"data"`
 }
 

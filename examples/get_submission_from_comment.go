@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/thecsw/mira"
 	"fmt"
+
+	"github.com/thecsw/mira"
 )
 
 func main() {
@@ -11,7 +12,7 @@ func main() {
 	r.Stream.PostListInterval = 2
 	i := 0
 	for {
-		post := <- ch
+		post := <-ch
 		i++
 		fmt.Println("(", i, ") -->", post.GetTitle())
 		comment, _ := r.Comment(post.GetId(), "hello, world")

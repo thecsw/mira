@@ -204,6 +204,34 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit in
 	return listing, nil
 }
 
+func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]CommentListingDataChildren, error) {
+	if string(post_id[1]) != "3" {
+		return nil, errors.New("The passed ID36 is not a submission.")
+	}
+	target := RedditOauth + "/r/" + sr + "/comments/" + post_id[3:] + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&showmore=true"
+	fmt.Println(target)
+	listing := make([]CommentListing, 2)
+	//	more:= make([]MoreListing, 10)
+	r, err := http.NewRequest("GET", target, nil)
+	if err != nil {
+		return nil, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	json.Unmarshal(buf.Bytes(), &listing)
+	//	json.Unmarshal(buf.Bytes(), &more)
+	//	fmt.Println(more)
+	return listing[1].GetChildren()[:len(listing[1].GetChildren())-1], nil
+}
+
 // Get submisssions from a subreddit up to a specified limit sorted by the given parameters
 // and with specified anchor
 //
