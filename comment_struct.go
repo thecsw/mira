@@ -1,6 +1,6 @@
 package mira
 
-type Comment struct {
+type CommentWrap struct {
 	Json CommentJson `json:"json"`
 }
 

@@ -32,10 +32,10 @@ func (c *Reddit) Me() (Me, error) {
 	return user, nil
 }
 
-func (c *Reddit) GetComment(id string) (CommentListingDataChildren, error) {
+func (c *Reddit) GetComment(id string) (Comment, error) {
 	target := RedditOauth + "/api/info.json?id=" + id
 	list := CommentListing{}
-	temp := CommentListingDataChildren{}
+	temp := Comment{}
 	r, err := http.NewRequest("GET", target, nil)
 	if err != nil {
 		return temp, err
@@ -204,7 +204,7 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit in
 	return listing, nil
 }
 
-func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]CommentListingDataChildren, error) {
+func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]Comment, error) {
 	if string(post_id[1]) != "3" {
 		return nil, errors.New("The passed ID36 is not a submission.")
 	}
@@ -289,54 +289,56 @@ func (c *Reddit) Submit(sr string, title string, text string) (Submission, error
 	return post, nil
 }
 
-func (c *Reddit) Reply(comment_id string, text string) (Comment, error) {
+func (c *Reddit) Reply(comment_id string, text string) (*Comment, error) {
 	target := RedditOauth + "/api/comment"
-	comment := Comment{}
+	comment := CommentWrap{}
 	form := url.Values{}
 	form.Add("text", text)
 	form.Add("thing_id", comment_id)
 	form.Add("api_type", "json")
 	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
 	if err != nil {
-		return comment, err
+		return nil, err
 	}
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, err := client.Do(r)
 	if err != nil {
-		return comment, err
+		return nil, err
 	}
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal(buf.Bytes(), &comment)
-	return comment, nil
+	temp, err := c.GetComment(comment.GetId())
+	return &temp, nil
 }
 
-func (c *Reddit) Comment(submission_id, text string) (Comment, error) {
+func (c *Reddit) Comment(submission_id, text string) (*Comment, error) {
 	target := RedditOauth + "/api/comment"
-	comment := Comment{}
+	comment := CommentWrap{}
 	form := url.Values{}
 	form.Add("text", text)
 	form.Add("thing_id", submission_id)
 	form.Add("api_type", "json")
 	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
 	if err != nil {
-		return comment, err
+		return nil, err
 	}
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, err := client.Do(r)
 	if err != nil {
-		return comment, err
+		return nil, err
 	}
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal(buf.Bytes(), &comment)
-	return comment, nil
+	temp, err := c.GetComment(comment.GetId())
+	return &temp, nil
 }
 
 func (c *Reddit) DeleteComment(comment_id string) error {
@@ -405,29 +407,30 @@ func (c *Reddit) Distinguish(comment_id string, how string, sticky bool) error {
 	return nil
 }
 
-func (c *Reddit) EditComment(comment_id, text string) (Comment, error) {
+func (c *Reddit) EditComment(comment_id, text string) (*Comment, error) {
 	target := RedditOauth + "/api/editusertext"
-	comment := Comment{}
+	comment := CommentWrap{}
 	form := url.Values{}
 	form.Add("text", text)
 	form.Add("thing_id", comment_id)
 	form.Add("api_type", "json")
 	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
 	if err != nil {
-		return comment, err
+		return nil, err
 	}
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, err := client.Do(r)
 	if err != nil {
-		return comment, err
+		return nil, err
 	}
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal(buf.Bytes(), &comment)
-	return comment, nil
+	temp, err := c.GetComment(comment.GetId())
+	return &temp, nil
 }
 
 func (c *Reddit) Compose(to, subject, text string) error {
