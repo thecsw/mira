@@ -1,10 +1,10 @@
-package main
+package examples
 
 import (
 	"github.com/thecsw/mira"
 )
 
-func main() {
+func Composing() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 
 	r.Compose("thecsw", "my subject", "hello, world")

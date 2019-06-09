@@ -1,10 +1,10 @@
-package main
+package examples
 
 import (
 	"github.com/thecsw/mira"
 )
 
-func main() {
+func StreamSubmissions() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	c, _ := r.StreamNewPosts("subredditname")
 	for {

@@ -6,11 +6,11 @@ type CommentListing struct {
 }
 
 type CommentListingData struct {
-	Modhash  string                       `json:"modhash"`
-	Dist     float64                      `json:"dist"`
+	Modhash  string    `json:"modhash"`
+	Dist     float64   `json:"dist"`
 	Children []Comment `json:"children"`
-	After    string                       `json:"after"`
-	Before   string                       `json:"before"`
+	After    string    `json:"after"`
+	Before   string    `json:"before"`
 }
 
 type Comment struct {

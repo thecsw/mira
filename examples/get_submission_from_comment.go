@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/thecsw/mira"
 )
 
-func main() {
+func GetSubmissionFromComment() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	ch, stop := r.StreamNewPosts("popular")
 	r.Stream.PostListInterval = 2

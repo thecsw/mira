@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/thecsw/mira"
 )
 
-func main() {
+func SortSubmissions() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	sort := "top"
 	var limit int = 25

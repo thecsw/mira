@@ -1,10 +1,10 @@
-package main
+package examples
 
 import (
 	"github.com/thecsw/mira"
 )
 
-func main() {
+func StreamComments() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	c, _ := r.StreamCommentReplies()
 	for {

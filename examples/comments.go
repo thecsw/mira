@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/thecsw/mira"
 )
 
-func main() {
+func Comments() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	// Make a submission
 	post, _ := r.Submit("memeinvestor_test", "mypost", "my text")
