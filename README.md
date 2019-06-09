@@ -1,5 +1,7 @@
 # MIRA or Meme Investor Reddit Api
 
+[https://travis-ci.org/thecsw/mira.svg?branch=master]
+
 For full documentation, please see the [Godoc page](https://godoc.org/github.com/thecsw/mira)
 
 MIRA is a Reddit Api Wrapper written in beautiful Go. This is a subproject
