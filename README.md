@@ -1,6 +1,8 @@
 # MIRA or Meme Investor Reddit Api
 
-![Build Status](https://travis-ci.org/thecsw/mira.svg?branch=master)
+[![Build Status](https://travis-ci.org/thecsw/mira.svg?branch=master)](https://travis-ci.org/thecsw/mira)
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 For full documentation, please see the [Godoc page](https://godoc.org/github.com/thecsw/mira)
 
