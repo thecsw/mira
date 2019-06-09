@@ -4,7 +4,5 @@ go:
   - 1.12.x
   - master
 
-gobuild_args: -v -bench
-
 script:
-  - go test ${gobuild_args} .
+  - go test -v -bench .
