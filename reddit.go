@@ -221,7 +221,6 @@ func (c *Reddit) GetSubredditComments(sr string, sort string, tdur string, limit
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
-	fmt.Println(string(buf.Bytes()))
 	json.Unmarshal(buf.Bytes(), &listing)
 	return listing, nil
 }
@@ -284,7 +283,7 @@ func (c *Reddit) GetSubredditPostsAfter(sr string, sort string, last string, lim
 }
 
 func (c *Reddit) GetSubredditCommentsAfter(sr string, sort string, last string, limit int) (CommentListing, error) {
-	target := RedditOauth + "/r/" + sr + "/comments.json" + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&before" + last
+	target := RedditOauth + "/r/" + sr + "/comments.json" + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&before=" + last
 	listing := CommentListing{}
 	r, err := http.NewRequest("GET", target, nil)
 	if err != nil {

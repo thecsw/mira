@@ -43,12 +43,9 @@ func (r *Reddit) StreamNewComments(sr string) (<-chan Comment, chan bool) {
 	go func() {
 		for {
 			stop <- false
-			//un, _ := r.ListUnreadMessages()
 			un, _ := r.GetSubredditCommentsAfter(sr, "new", last, 25)
 			s := un.GetChildren()
 			for _, v := range s {
-				// Only process comment replies and
-				// mark them as read.
 				c <- v
 			}
 			if len(s) > 0 {
