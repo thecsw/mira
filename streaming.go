@@ -30,6 +30,39 @@ func (r *Reddit) StreamCommentReplies() (<-chan Comment, chan bool) {
 	return c, stop
 }
 
+// c is the channel with all comments
+// stop is the channel to stop the stream. Do stop <- true to stop the loop
+func (r *Reddit) StreamNewComments(sr string) (<-chan Comment, chan bool) {
+	c := make(chan Comment, 25)
+	stop := make(chan bool, 1)
+	anchor, _ := r.GetSubredditComments(sr, "new", "hour", 1)
+	last := ""
+	if len(anchor.GetChildren()) > 0 {
+		last = anchor.GetChildren()[0].GetId()
+	}
+	go func() {
+		for {
+			stop <- false
+			//un, _ := r.ListUnreadMessages()
+			un, _ := r.GetSubredditCommentsAfter(sr, "new", last, 25)
+			s := un.GetChildren()
+			for _, v := range s {
+				// Only process comment replies and
+				// mark them as read.
+				c <- v
+			}
+			if len(s) > 0 {
+				last = s[0].GetId()
+			}
+			time.Sleep(r.Stream.CommentListInterval * time.Second)
+			if <-stop {
+				return
+			}
+		}
+	}()
+	return c, stop
+}
+
 func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) {
 	c := make(chan PostListingChild, 25)
 	stop := make(chan bool, 1)

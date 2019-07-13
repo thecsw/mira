@@ -204,6 +204,28 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit in
 	return listing, nil
 }
 
+func (c *Reddit) GetSubredditComments(sr string, sort string, tdur string, limit int) (CommentListing, error) {
+	target := RedditOauth + "/r/" + sr + "/comments.json" + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&t=" + tdur
+	listing := CommentListing{}
+	r, err := http.NewRequest("GET", target, nil)
+	if err != nil {
+		return listing, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return listing, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	fmt.Println(string(buf.Bytes()))
+	json.Unmarshal(buf.Bytes(), &listing)
+	return listing, nil
+}
+
 func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]Comment, error) {
 	if string(post_id[1]) != "3" {
 		return nil, errors.New("The passed ID36 is not a submission.")
@@ -243,6 +265,27 @@ func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, l
 func (c *Reddit) GetSubredditPostsAfter(sr string, sort string, last string, limit int) (PostListing, error) {
 	target := RedditOauth + "/r/" + sr + "/" + sort + ".json" + "?limit=" + strconv.Itoa(limit) + "&before=" + last
 	listing := PostListing{}
+	r, err := http.NewRequest("GET", target, nil)
+	if err != nil {
+		return listing, err
+	}
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "bearer "+c.Token)
+	client := &http.Client{}
+	response, err := client.Do(r)
+	if err != nil {
+		return listing, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	json.Unmarshal(buf.Bytes(), &listing)
+	return listing, nil
+}
+
+func (c *Reddit) GetSubredditCommentsAfter(sr string, sort string, last string, limit int) (CommentListing, error) {
+	target := RedditOauth + "/r/" + sr + "/comments.json" + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&before" + last
+	listing := CommentListing{}
 	r, err := http.NewRequest("GET", target, nil)
 	if err != nil {
 		return listing, err
