@@ -37,19 +37,18 @@ func (r *Reddit) StreamNewComments(sr string) (<-chan Comment, chan bool) {
 	stop := make(chan bool, 1)
 	anchor, _ := r.GetSubredditComments(sr, "new", "hour", 1)
 	last := ""
-	if len(anchor.GetChildren()) > 0 {
-		last = anchor.GetChildren()[0].GetId()
+	if len(anchor) > 0 {
+		last = anchor[0].GetId()
 	}
 	go func() {
 		for {
 			stop <- false
 			un, _ := r.GetSubredditCommentsAfter(sr, "new", last, 25)
-			s := un.GetChildren()
-			for _, v := range s {
+			for _, v := range un {
 				c <- v
 			}
-			if len(s) > 0 {
-				last = s[0].GetId()
+			if len(un) > 0 {
+				last = un[0].GetId()
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
 			if <-stop {

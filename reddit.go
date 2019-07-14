@@ -204,25 +204,25 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit in
 	return listing, nil
 }
 
-func (c *Reddit) GetSubredditComments(sr string, sort string, tdur string, limit int) (CommentListing, error) {
+func (c *Reddit) GetSubredditComments(sr string, sort string, tdur string, limit int) ([]Comment, error) {
 	target := RedditOauth + "/r/" + sr + "/comments.json" + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&t=" + tdur
 	listing := CommentListing{}
 	r, err := http.NewRequest("GET", target, nil)
 	if err != nil {
-		return listing, err
+		return nil, err
 	}
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, err := client.Do(r)
 	if err != nil {
-		return listing, err
+		return nil, err
 	}
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal(buf.Bytes(), &listing)
-	return listing, nil
+	return listing.GetChildren(), nil
 }
 
 func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]Comment, error) {
@@ -282,25 +282,25 @@ func (c *Reddit) GetSubredditPostsAfter(sr string, sort string, last string, lim
 	return listing, nil
 }
 
-func (c *Reddit) GetSubredditCommentsAfter(sr string, sort string, last string, limit int) (CommentListing, error) {
+func (c *Reddit) GetSubredditCommentsAfter(sr string, sort string, last string, limit int) ([]Comment, error) {
 	target := RedditOauth + "/r/" + sr + "/comments.json" + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&before=" + last
 	listing := CommentListing{}
 	r, err := http.NewRequest("GET", target, nil)
 	if err != nil {
-		return listing, err
+		return nil, err
 	}
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "bearer "+c.Token)
 	client := &http.Client{}
 	response, err := client.Do(r)
 	if err != nil {
-		return listing, err
+		return nil, err
 	}
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal(buf.Bytes(), &listing)
-	return listing, nil
+	return listing.GetChildren(), nil
 }
 
 func (c *Reddit) Submit(sr string, title string, text string) (Submission, error) {
