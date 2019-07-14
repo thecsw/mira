@@ -331,7 +331,7 @@ func (c *Reddit) Submit(sr string, title string, text string) (Submission, error
 	return post, nil
 }
 
-func (c *Reddit) Reply(comment_id string, text string) (*Comment, error) {
+func (c *Reddit) Reply(comment_id string, text string) (*CommentWrap, error) {
 	target := RedditOauth + "/api/comment"
 	comment := CommentWrap{}
 	form := url.Values{}
@@ -353,8 +353,8 @@ func (c *Reddit) Reply(comment_id string, text string) (*Comment, error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal(buf.Bytes(), &comment)
-	temp, err := c.GetComment(comment.GetId())
-	return &temp, nil
+	//	temp, err := c.GetComment(comment.GetId())
+	return &comment, nil
 }
 
 func (c *Reddit) Comment(submission_id, text string) (*Comment, error) {
