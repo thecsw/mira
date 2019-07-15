@@ -87,3 +87,7 @@ func (c *Reddit) SetDefault() {
 		GetSubmissionFromCommentTries: 12,
 	}
 }
+
+func (c *Reddit) SetClient(client *http.Client) {
+	c.Client = client
+}

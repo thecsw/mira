@@ -13,7 +13,7 @@ func (r *Reddit) StreamCommentReplies() (<-chan Comment, chan bool) {
 		for {
 			stop <- false
 			un, _ := r.ListUnreadMessages()
-			for _, v := range un.GetChildren() {
+			for _, v := range un {
 				// Only process comment replies and
 				// mark them as read.
 				if v.IsCommentReply() {
@@ -64,19 +64,18 @@ func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) 
 	stop := make(chan bool, 1)
 	anchor, _ := r.GetSubredditPosts(sr, "new", "hour", 1)
 	last := ""
-	if len(anchor.GetChildren()) > 0 {
-		last = anchor.GetChildren()[0].GetId()
+	if len(anchor) > 0 {
+		last = anchor[0].GetId()
 	}
 	go func() {
 		for {
 			stop <- false
-			new, _ := r.GetSubredditPostsAfter(sr, "new", last, r.Stream.PostListSlice)
-			s := new.GetChildren()
-			if len(s) > 0 {
-				last = s[0].GetId()
+			new, _ := r.GetSubredditPostsAfter(sr, last, r.Stream.PostListSlice)
+			if len(new) > 0 {
+				last = new[0].GetId()
 			}
-			for i, _ := range s {
-				c <- s[len(s)-i-1]
+			for i, _ := range new {
+				c <- new[len(new)-i-1]
 			}
 			time.Sleep(r.Stream.PostListInterval * time.Second)
 			if <-stop {

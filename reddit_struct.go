@@ -1,6 +1,7 @@
 package mira
 
 import (
+	"net/http"
 	"time"
 )
 
@@ -10,6 +11,7 @@ type Reddit struct {
 	Creds    Credentials
 	Stream   Streaming
 	Values   RedditVals
+	Client   *http.Client
 }
 
 type Streaming struct {

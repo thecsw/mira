@@ -6,73 +6,59 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 )
 
-func (c *Reddit) Me() (Me, error) {
+func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {
+	values := "?"
+	for i, v := range payload {
+		v = strings.ReplaceAll(v, " ", "+")
+		values += fmt.Sprintf("%s=%s&", i, v)
+	}
+	values = values[:len(values)-1]
+	r, err := http.NewRequest(method, target+values, nil)
+	r.Header.Set("User-Agent", c.Creds.UserAgent)
+	r.Header.Set("Authorization", "Bearer "+c.Token)
+	response, err := c.Client.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	return buf.Bytes(), nil
+}
+
+func (c *Reddit) Me() (*Me, error) {
 	target := RedditOauth + "/api/v1/me"
-	user := Me{}
-	r, err := http.NewRequest("GET", target, nil)
+	ans, err := c.MiraRequest("GET", target, nil)
 	if err != nil {
-		return user, err
+		return nil, err
 	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return user, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &user)
-	return user, nil
+	ret := &Me{}
+	json.Unmarshal(ans, ret)
+	return ret, nil
 }
 
-func (c *Reddit) GetComment(id string) (Comment, error) {
-	target := RedditOauth + "/api/info.json?id=" + id
-	list := CommentListing{}
-	temp := Comment{}
-	r, err := http.NewRequest("GET", target, nil)
-	if err != nil {
-		return temp, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return temp, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &list)
-	return list.GetChildren()[0], nil
+func (c *Reddit) GetComment(id string) (*Comment, error) {
+	target := RedditOauth + "/api/info.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"id": id,
+	})
+	ret := CommentListing{}
+	json.Unmarshal(ans, ret)
+	return &ret.GetChildren()[0], err
 }
 
-func (c *Reddit) GetSubmission(id string) (PostListing, error) {
-	target := RedditOauth + "/api/info.json?id=" + id
-	list := PostListing{}
-	r, err := http.NewRequest("GET", target, nil)
-	if err != nil {
-		return list, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return list, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &list)
-	return list, nil
+func (c *Reddit) GetSubmission(id string) (*PostListing, error) {
+	target := RedditOauth + "/api/info.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"id": id,
+	})
+	ret := &PostListing{}
+	json.Unmarshal(ans, ret)
+	return ret, err
 }
 
 // This function will return the submission id of a comment
@@ -104,27 +90,22 @@ func (c *Reddit) GetSubmissionFromComment(comment_id string) (string, error) {
 	current := comment_id
 	// Not a comment passed
 	if string(current[1]) != "1" {
-		return "", errors.New("The passed ID is not a comment.")
+		return "", errors.New("the passed ID is not a comment")
 	}
-	target := RedditOauth + "/api/info.json?id="
+	target := RedditOauth + "/api/info.json"
 	temp := CommentListing{}
 	tries := 0
 	for string(current[1]) != "3" {
-		r, err := http.NewRequest("GET", target+current, nil)
+		ans, err := c.MiraRequest("GET", target, map[string]string{
+			"id": current,
+		})
 		if err != nil {
 			return "", err
 		}
-		r.Header.Set("User-Agent", c.Creds.UserAgent)
-		r.Header.Set("Authorization", "bearer "+c.Token)
-		client := &http.Client{}
-		response, err := client.Do(r)
-		if err != nil {
-			return "", err
+		json.Unmarshal(ans, &temp)
+		if len(temp.Data.Children) < 1 {
+			return "", errors.New("could not find the requested comment")
 		}
-		defer response.Body.Close()
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(response.Body)
-		json.Unmarshal(buf.Bytes(), &temp)
 		current = temp.Data.Children[0].GetParentId()
 		tries++
 		if tries > c.Values.GetSubmissionFromCommentTries {
@@ -134,46 +115,20 @@ func (c *Reddit) GetSubmissionFromComment(comment_id string) (string, error) {
 	return current, nil
 }
 
-func (c *Reddit) GetUser(name string) (Redditor, error) {
+func (c *Reddit) GetUser(name string) (*Redditor, error) {
 	target := RedditOauth + "/user/" + name + "/about"
-	user := Redditor{}
-	r, err := http.NewRequest("GET", target, nil)
-	if err != nil {
-		return user, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return user, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &user)
-	return user, nil
+	ans, err := c.MiraRequest("GET", target, nil)
+	ret := &Redditor{}
+	json.Unmarshal(ans, ret)
+	return ret, err
 }
 
-func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
+func (c *Reddit) GetSubreddit(name string) (*Subreddit, error) {
 	target := RedditOauth + "/r/" + name + "/about"
-	sub := Subreddit{}
-	r, err := http.NewRequest("GET", target, nil)
-	if err != nil {
-		return sub, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return sub, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &sub)
-	return sub, nil
+	ans, err := c.MiraRequest("GET", target, nil)
+	ret := &Subreddit{}
+	json.Unmarshal(ans, ret)
+	return ret, err
 }
 
 // Get submisssions from a subreddit up to a specified limit sorted by the given parameter
@@ -183,74 +138,55 @@ func (c *Reddit) GetSubreddit(name string) (Subreddit, error) {
 // Time options: "all", "year", "month", "week", "day", "hour"
 //
 // Limit is any numerical value, so 0 <= limit <= 100
-func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit int) (PostListing, error) {
-	target := RedditOauth + "/r/" + sr + "/" + sort + ".json" + "?limit=" + strconv.Itoa(limit) + "&t=" + tdur
-	listing := PostListing{}
-	r, err := http.NewRequest("GET", target, nil)
-	if err != nil {
-		return listing, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return listing, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &listing)
-	return listing, nil
+func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit int) ([]PostListingChild, error) {
+	target := RedditOauth + "/r/" + sr + "/" + sort + ".json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"limit": strconv.Itoa(limit),
+		"t":     tdur,
+	})
+	ret := &PostListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
 }
 
 func (c *Reddit) GetSubredditComments(sr string, sort string, tdur string, limit int) ([]Comment, error) {
-	target := RedditOauth + "/r/" + sr + "/comments.json" + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&t=" + tdur
-	listing := CommentListing{}
-	r, err := http.NewRequest("GET", target, nil)
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &listing)
-	return listing.GetChildren(), nil
+	target := RedditOauth + "/r/" + sr + "/comments.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"sort":  sort,
+		"limit": strconv.Itoa(limit),
+		"t":     tdur,
+	})
+	ret := &CommentListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
 }
 
-func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]Comment, error) {
+func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]Comment, []string, error) {
 	if string(post_id[1]) != "3" {
-		return nil, errors.New("The passed ID36 is not a submission.")
+		return nil, nil, errors.New("the passed ID36 is not a submission")
 	}
-	target := RedditOauth + "/r/" + sr + "/comments/" + post_id[3:] + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&showmore=true"
-	fmt.Println(target)
-	listing := make([]CommentListing, 2)
-	//	more:= make([]MoreListing, 10)
-	r, err := http.NewRequest("GET", target, nil)
+	target := RedditOauth + "/r/" + sr + "/comments/" + post_id[3:]
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"sort":     sort,
+		"limit":    strconv.Itoa(limit),
+		"showmare": strconv.FormatBool(false),
+	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return nil, err
+	temp := make([]CommentListing, 0, 8)
+	json.Unmarshal(ans, &temp)
+	ret := make([]Comment, 0, 8)
+	for _, v := range temp {
+		comments := v.GetChildren()
+		for _, v2 := range comments {
+			ret = append(ret, v2)
+		}
 	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &listing)
-	//	json.Unmarshal(buf.Bytes(), &more)
-	//	fmt.Println(more)
-	return listing[1].GetChildren()[:len(listing[1].GetChildren())-1], nil
+	// Cut off the "more" kind
+	children := ret[len(ret)-1].Data.Children
+	ret = ret[:len(ret)-1]
+	return ret, children, nil
 }
 
 // Get submisssions from a subreddit up to a specified limit sorted by the given parameters
@@ -261,325 +197,154 @@ func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, l
 // Limit is any numerical value, so 0 <= limit <= 100
 //
 // Anchor options are submissions full thing, for example: t3_bqqwm3
-func (c *Reddit) GetSubredditPostsAfter(sr string, sort string, last string, limit int) (PostListing, error) {
-	target := RedditOauth + "/r/" + sr + "/" + sort + ".json" + "?limit=" + strconv.Itoa(limit) + "&before=" + last
-	listing := PostListing{}
-	r, err := http.NewRequest("GET", target, nil)
-	if err != nil {
-		return listing, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return listing, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &listing)
-	return listing, nil
+func (c *Reddit) GetSubredditPostsAfter(sr string, last string, limit int) ([]PostListingChild, error) {
+	target := RedditOauth + "/r/" + sr + "/new.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"limit":  strconv.Itoa(limit),
+		"before": last,
+	})
+	ret := &PostListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
 }
 
 func (c *Reddit) GetSubredditCommentsAfter(sr string, sort string, last string, limit int) ([]Comment, error) {
-	target := RedditOauth + "/r/" + sr + "/comments.json" + "?sort=" + sort + "&limit=" + strconv.Itoa(limit) + "&before=" + last
-	listing := CommentListing{}
-	r, err := http.NewRequest("GET", target, nil)
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &listing)
-	return listing.GetChildren(), nil
+	target := RedditOauth + "/r/" + sr + "/comments.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"sort":   sort,
+		"limit":  strconv.Itoa(limit),
+		"before": last,
+	})
+	ret := &CommentListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
 }
 
-func (c *Reddit) Submit(sr string, title string, text string) (Submission, error) {
+func (c *Reddit) Submit(sr string, title string, text string) (*Submission, error) {
 	target := RedditOauth + "/api/submit"
-	post := Submission{}
-	form := url.Values{}
-	form.Add("title", title)
-	form.Add("sr", sr)
-	form.Add("text", text)
-	form.Add("kind", "self")
-	form.Add("resubmit", "true")
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return post, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return post, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &post)
-	return post, nil
+	ans, err := c.MiraRequest("POST", target, map[string]string{
+		"title":    title,
+		"sr":       sr,
+		"text":     text,
+		"kind":     "self",
+		"resubmit": "true",
+		"api_type": "json",
+	})
+	ret := &Submission{}
+	json.Unmarshal(ans, ret)
+	return ret, err
 }
 
 func (c *Reddit) Reply(comment_id string, text string) (*CommentWrap, error) {
 	target := RedditOauth + "/api/comment"
-	comment := CommentWrap{}
-	form := url.Values{}
-	form.Add("text", text)
-	form.Add("thing_id", comment_id)
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &comment)
-	//	temp, err := c.GetComment(comment.GetId())
-	return &comment, nil
+	ans, err := c.MiraRequest("POST", target, map[string]string{
+		"text":     text,
+		"thing_id": comment_id,
+		"api_type": "json",
+	})
+	ret := &CommentWrap{}
+	json.Unmarshal(ans, ret)
+	return ret, err
 }
 
-func (c *Reddit) Comment(submission_id, text string) (*Comment, error) {
+func (c *Reddit) Comment(submission_id, text string) (*CommentWrap, error) {
 	target := RedditOauth + "/api/comment"
-	comment := CommentWrap{}
-	form := url.Values{}
-	form.Add("text", text)
-	form.Add("thing_id", submission_id)
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &comment)
-	temp, err := c.GetComment(comment.GetId())
-	return &temp, nil
+	ans, err := c.MiraRequest("POST", target, map[string]string{
+		"text":     text,
+		"thing_id": submission_id,
+		"api_type": "json",
+	})
+	ret := &CommentWrap{}
+	json.Unmarshal(ans, ret)
+	return ret, err
 }
 
 func (c *Reddit) DeleteComment(comment_id string) error {
 	target := RedditOauth + "/api/del"
-	form := url.Values{}
-	form.Add("id", comment_id)
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	return nil
+	_, err := c.MiraRequest("POST", target, map[string]string{
+		"id":       comment_id,
+		"api_type": "json",
+	})
+	return err
 }
 
 func (c *Reddit) Approve(comment_id string) error {
 	target := RedditOauth + "/api/approve"
-	form := url.Values{}
-	form.Add("id", comment_id)
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	return nil
+	_, err := c.MiraRequest("POST", target, map[string]string{
+		"id":       comment_id,
+		"api_type": "json",
+	})
+	return err
 }
 
 func (c *Reddit) Distinguish(comment_id string, how string, sticky bool) error {
-	st := "false"
-	if sticky {
-		st = "true"
-	}
 	target := RedditOauth + "/api/distinguish"
-	form := url.Values{}
-	form.Add("id", comment_id)
-	form.Add("how", how)
-	form.Add("sticky", st)
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	return nil
+	_, err := c.MiraRequest("POST", target, map[string]string{
+		"id":       comment_id,
+		"how":      how,
+		"sticky":   strconv.FormatBool(sticky),
+		"api_type": "json",
+	})
+	return err
 }
 
-func (c *Reddit) EditComment(comment_id, text string) (*Comment, error) {
+func (c *Reddit) EditComment(comment_id, text string) (*CommentWrap, error) {
 	target := RedditOauth + "/api/editusertext"
-	comment := CommentWrap{}
-	form := url.Values{}
-	form.Add("text", text)
-	form.Add("thing_id", comment_id)
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &comment)
-	temp, err := c.GetComment(comment.GetId())
-	return &temp, nil
+	ans, err := c.MiraRequest("POST", target, map[string]string{
+		"text":     text,
+		"thing_id": comment_id,
+		"api_type": "json",
+	})
+	ret := &CommentWrap{}
+	json.Unmarshal(ans, ret)
+	return ret, err
 }
 
 func (c *Reddit) Compose(to, subject, text string) error {
 	target := RedditOauth + "/api/compose"
-	form := url.Values{}
-	form.Add("subject", subject)
-	form.Add("text", text)
-	form.Add("to", to)
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	return nil
+	_, err := c.MiraRequest("POST", target, map[string]string{
+		"subject":  subject,
+		"text":     text,
+		"to":       to,
+		"api_type": "json",
+	})
+	return err
 }
 
 func (c *Reddit) ReadMessage(message_id string) error {
 	target := RedditOauth + "/api/read_message"
-	form := url.Values{}
-	form.Add("id", message_id)
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	return nil
+	_, err := c.MiraRequest("POST", target, map[string]string{
+		"id": message_id,
+	})
+	return err
 }
 
 func (c *Reddit) ReadAllMessages() error {
 	target := RedditOauth + "/api/read_all_messages"
-	r, err := http.NewRequest("POST", target, nil)
-	if err != nil {
-		return err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	return nil
+	_, err := c.MiraRequest("POST", target, nil)
+	return err
 }
 
-func (c *Reddit) ListUnreadMessages() (CommentListing, error) {
+func (c *Reddit) ListUnreadMessages() ([]Comment, error) {
 	target := RedditOauth + "/message/unread"
-	list := CommentListing{}
-	form := url.Values{}
-	form.Add("mark", "true")
-	r, err := http.NewRequest("GET", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return list, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return list, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal(buf.Bytes(), &list)
-	return list, nil
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"mark": "true",
+	})
+	ret := &CommentListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
 }
 
 func (c *Reddit) SubredditUpdateSidebar(sr, text string) ([]byte, error) {
 	target := RedditOauth + "/api/site_admin"
-	form := url.Values{}
-	form.Add("sr", sr)
-	form.Add("name", "None")
-	form.Add("description", text)
-	form.Add("title", sr)
-	form.Add("wikimode", "anyone")
-	form.Add("link_type", "any")
-	form.Add("type", "public")
-	form.Add("api_type", "json")
-	r, err := http.NewRequest("POST", target, strings.NewReader(form.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("User-Agent", c.Creds.UserAgent)
-	r.Header.Set("Authorization", "bearer "+c.Token)
-	client := &http.Client{}
-	response, err := client.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	return buf.Bytes(), nil
+	return c.MiraRequest("POST", target, map[string]string{
+		"sr":          sr,
+		"name":        "None",
+		"description": text,
+		"title":       sr,
+		"wikimode":    "anyone",
+		"link_type":   "any",
+		"type":        "public",
+		"api_type":    "json",
+	})
 }
