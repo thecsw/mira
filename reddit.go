@@ -18,6 +18,9 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 	}
 	values = values[:len(values)-1]
 	r, err := http.NewRequest(method, target+values, nil)
+	if err != nil {
+		return nil, err
+	}
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "Bearer "+c.Token)
 	response, err := c.Client.Do(r)
