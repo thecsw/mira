@@ -6,14 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
-	"strings"
 )
 
 func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {
 	values := "?"
 	for i, v := range payload {
-		v = strings.ReplaceAll(v, " ", "+")
+		v = url.QueryEscape(v)
 		values += fmt.Sprintf("%s=%s&", i, v)
 	}
 	values = values[:len(values)-1]
