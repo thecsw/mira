@@ -74,7 +74,9 @@ func (c *Reddit) auto_refresh() {
 // Reauthenticate and updates the object itself
 func (c *Reddit) update_creds() {
 	temp, _ := Authenticate(&c.Creds)
+	tempClient := c.Client
 	*c = *temp
+	c.SetClient(tempClient)
 }
 
 func (c *Reddit) SetDefault() {
