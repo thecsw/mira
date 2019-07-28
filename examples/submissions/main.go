@@ -1,4 +1,4 @@
-package examples
+package main
 
 import (
 	"fmt"
@@ -6,13 +6,12 @@ import (
 	"github.com/thecsw/mira"
 )
 
-func SortSubmissions() {
+func main() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	sort := "top"
 	var limit int = 25
 	duration := "all"
-	subs, _ := r.GetSubredditPosts("subredditname", sort, duration, limit)
-
+	subs, _ := r.Subreddit("all").Submissions(sort, duration, limit)
 	for _, v := range subs {
 		fmt.Println("Submission Title: ", v.GetTitle())
 	}

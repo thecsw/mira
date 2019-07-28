@@ -55,8 +55,13 @@ func Authenticate(c *Credentials) (*Reddit, error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 
+	data := buf.Bytes()
+	if err := findRedditError(data); err != nil {
+		return nil, err
+	}
+
 	auth := Reddit{}
-	json.Unmarshal(buf.Bytes(), &auth)
+	json.Unmarshal(data, &auth)
 	auth.Creds = *c
 	return &auth, nil
 }

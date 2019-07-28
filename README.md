@@ -50,6 +50,8 @@ USER_AGENT =
 
 ## Examples
 
+Note: Error checking is omitted for brevity.
+
 ### Streaming comment replies
 
 Below is an example on how to make a simple bot that 
@@ -60,15 +62,15 @@ package main
 
 import (
 	"github.com/thecsw/mira"
-	"fmt"
 )
 
 func main() {
+	// Good practice is to check if the login errors out or not
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	c, _ := r.StreamCommentReplies()
 	for {
-		msg := <- c
-		r.Reply(msg.GetId(), "I got your message!")
+		msg := <-c
+		r.Comment(msg.GetId()).Reply("I got your message!")
 	}
 }
 ```
@@ -83,15 +85,14 @@ package main
 
 import (
 	"github.com/thecsw/mira"
-	"fmt"
 )
 
 func main() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
-	c, _ := r.StreamNewPosts("subredditname")
+	c, _, _ := r.Subreddit("all").StreamSubmissions()
 	for {
-		post := <- c
-		r.Comment(post.GetId(), "I saw your submission!")
+		post := <-c
+		r.Submission(post.GetId()).Save("hello there")
 	}
 }
 ```
@@ -105,24 +106,32 @@ edit a comment.
 package main
 
 import (
-	"github.com/thecsw/mira"
 	"fmt"
+
+	"github.com/thecsw/mira"
 )
 
+// Errors are omitted for brevity
 func main() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
+
 	// Make a submission
-	post, _ := r.Submit("memeinvestor_test", "mypost", "my text")
+	post, _ := r.Subreddit("mysubreddit").Submit("mytitle", "mytext")
+
 	// Comment on our new submission
-	comment, _ := r.Comment(post.GetId(), "My First Comment")
+	comment, _ := r.Submission(post.GetId()).Save("mycomment")
+
 	// Reply to our own comment
-	reply, _ := r.Reply(comment.GetId(), "My Reply to the First Comment")
+	reply, _ := r.Comment(comment.GetId()).Reply("myreply")
+
 	// Delete the reply
-	r.DeleteComment(reply.GetId())
+	r.Comment(reply.GetId()).Delete()
+
 	// Edit the first comment
-	new_comment, _ := r.EditComment(comment.GetId(), "I Edited This!!")
+	newComment, _ := r.Comment(comment.GetId()).Edit("myedit")
+
 	// Show the comment's body
-	fmt.Println(new_comment.GetBody())
+	fmt.Println(newComment.GetBody())
 }
 ```
 
@@ -135,16 +144,12 @@ package main
 
 import (
 	"github.com/thecsw/mira"
-	"fmt"
 )
 
 func main() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 
-	r.Compose("thecsw", "my subject", "hello, world")
-	// or
-	user, _ := r.GetUser("thecsw")
-	r.Compose(user.GetName(), "my subject", "hello, world")
+	r.Redditor("myuser").Compose("mytitle", "mytext")
 }
 ```
 
@@ -157,8 +162,9 @@ one of our methods.
 package main
 
 import (
-	"github.com/thecsw/mira"
 	"fmt"
+
+	"github.com/thecsw/mira"
 )
 
 func main() {
@@ -166,9 +172,8 @@ func main() {
 	sort := "top"
 	var limit int = 25
 	duration := "all"
-	subs, _ := r.GetSubredditPosts("subredditname", sort, duration, limit)
-	
-	for _, v := range subs.GetChildren() {
+	subs, _ := r.Subreddit("all").Submissions(sort, duration, limit)
+	for _, v := range subs {
 		fmt.Println("Submission Title: ", v.GetTitle())
 	}
 }

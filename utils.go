@@ -13,7 +13,10 @@ func ReadCredsFromFile(file string) Credentials {
 	Username, _ := regexp.Compile(`USERNAME\s*=\s*(.+)`)
 	Password, _ := regexp.Compile(`PASSWORD\s*=\s*(.+)`)
 	UserAgent, _ := regexp.Compile(`USER_AGENT\s*=\s*(.+)`)
-	data, _ := ioutil.ReadFile(file)
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return Credentials{}
+	}
 	s := string(data)
 	creds := Credentials{
 		ClientId.FindStringSubmatch(s)[1],

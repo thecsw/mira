@@ -1,14 +1,14 @@
-package examples
+package main
 
 import (
 	"github.com/thecsw/mira"
 )
 
-func StreamComments() {
+func main() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
-	c, _ := r.StreamCommentReplies()
+	c, _, _ := r.Subreddit("all").StreamComments()
 	for {
 		msg := <-c
-		r.Reply(msg.GetId(), "I got your message!")
+		r.Comment(msg.GetId()).Reply("myreply")
 	}
 }
