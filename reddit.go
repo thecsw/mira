@@ -95,6 +95,8 @@ func (c *Reddit) Comments(sort string, tdur string, limit int) ([]Comment, error
 			return nil, err
 		}
 		return comments, nil
+	case "redditor":
+		return c.getRedditorComments(c.Chain.Name, sort, tdur, limit)
 	default:
 		return nil, fmt.Errorf("'%s' type does not have an option for comments", c.Chain.Type)
 	}
@@ -252,6 +254,30 @@ func (c *Reddit) getSubredditComments(sr string, sort string, tdur string, limit
 	return ret.GetChildren(), err
 }
 
+func (c *Reddit) getRedditorComments(user string, sort string, tdur string, limit int) ([]Comment, error) {
+	target := RedditOauth + "/u/" + user + "/comments.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"sort":  sort,
+		"limit": strconv.Itoa(limit),
+		"t":     tdur,
+	})
+	ret := &CommentListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
+}
+
+func (c *Reddit) getRedditorCommentsAfter(user string, sort string, last string, limit int) ([]Comment, error) {
+	target := RedditOauth + "/u/" + user + "/comments.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"sort":   sort,
+		"limit":  strconv.Itoa(limit),
+		"before": last,
+	})
+	ret := &CommentListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
+}
+
 func (c *Reddit) getSubmissionComments(post_id string, sort string, tdur string, limit int) ([]Comment, []string, error) {
 	if string(post_id[1]) != "3" {
 		return nil, nil, errors.New("the passed ID36 is not a submission")
@@ -304,6 +330,8 @@ func (c *Reddit) CommentsAfter(sort string, last string, limit int) ([]Comment, 
 	switch c.Chain.Type {
 	case "subreddit":
 		return c.getSubredditCommentsAfter(c.Chain.Name, sort, last, limit)
+	case "redditor":
+		return c.getRedditorCommentsAfter(c.Chain.Name, sort, last, limit)
 	default:
 		return nil, fmt.Errorf("'%s' type does not have an option for comments", c.Chain.Type)
 	}

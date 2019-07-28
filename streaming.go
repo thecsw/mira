@@ -31,6 +31,20 @@ func (r *Reddit) StreamCommentReplies() (<-chan Comment, chan bool) {
 // // c is the channel with all comments
 // // stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamComments() (<-chan Comment, chan bool, error) {
+	err := r.checkType("subreddit", "redditor")
+	if err != nil {
+		return nil, nil, err
+	}
+	switch r.Chain.Type {
+	case "subreddit":
+		return r.streamSubredditComments()
+	case "redditor":
+		return r.streamRedditorComments()
+	}
+	return nil, nil, nil
+}
+
+func (r *Reddit) streamSubredditComments() (<-chan Comment, chan bool, error) {
 	c := make(chan Comment, 25)
 	stop := make(chan bool, 1)
 	anchor, err := r.Subreddit(r.Chain.Name).Comments("new", "hour", 1)
@@ -45,7 +59,36 @@ func (r *Reddit) StreamComments() (<-chan Comment, chan bool, error) {
 		for {
 			stop <- false
 			un, _ := r.Subreddit(r.Chain.Name).CommentsAfter("new", last, 25)
-			//			un, _ := r.getSubredditCommentsAfter(sr, "new", last, 25)
+			for _, v := range un {
+				c <- v
+			}
+			if len(un) > 0 {
+				last = un[0].GetId()
+			}
+			time.Sleep(r.Stream.CommentListInterval * time.Second)
+			if <-stop {
+				return
+			}
+		}
+	}()
+	return c, stop, nil
+}
+
+func (r *Reddit) streamRedditorComments() (<-chan Comment, chan bool, error) {
+	c := make(chan Comment, 25)
+	stop := make(chan bool, 1)
+	anchor, err := r.Redditor(r.Chain.Name).Comments("new", "hour", 1)
+	if err != nil {
+		return nil, nil, err
+	}
+	last := ""
+	if len(anchor) > 0 {
+		last = anchor[0].GetId()
+	}
+	go func() {
+		for {
+			stop <- false
+			un, _ := r.Redditor(r.Chain.Name).CommentsAfter("new", last, 25)
 			for _, v := range un {
 				c <- v
 			}
