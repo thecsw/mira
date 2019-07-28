@@ -89,6 +89,12 @@ func (c *Reddit) Comments(sort string, tdur string, limit int) ([]Comment, error
 	switch c.Chain.Type {
 	case "subreddit":
 		return c.getSubredditComments(c.Chain.Name, sort, tdur, limit)
+	case "submission":
+		comments, _, err := c.getSubmissionComments(c.Chain.Name, sort, tdur, limit)
+		if err != nil {
+			return nil, err
+		}
+		return comments, nil
 	default:
 		return nil, fmt.Errorf("'%s' type does not have an option for comments", c.Chain.Type)
 	}
@@ -167,8 +173,12 @@ func (c *Reddit) getComment(id string) (*Comment, error) {
 //
 // NOTE: If any error occurs, the method will return on error object.
 // If it takes more than 12 calls, the function bails out.
-func (c *Reddit) GetSubmissionFromComment(comment_id string) (string, error) {
-	current := comment_id
+func (c *Reddit) Root() (string, error) {
+	err := c.checkType("comment")
+	if err != nil {
+		return "", err
+	}
+	current := c.Chain.Name
 	// Not a comment passed
 	if string(current[1]) != "1" {
 		return "", errors.New("the passed ID is not a comment")
@@ -242,15 +252,16 @@ func (c *Reddit) getSubredditComments(sr string, sort string, tdur string, limit
 	return ret.GetChildren(), err
 }
 
-func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]Comment, []string, error) {
+func (c *Reddit) getSubmissionComments(post_id string, sort string, tdur string, limit int) ([]Comment, []string, error) {
 	if string(post_id[1]) != "3" {
 		return nil, nil, errors.New("the passed ID36 is not a submission")
 	}
-	target := RedditOauth + "/r/" + sr + "/comments/" + post_id[3:]
+	target := RedditOauth + "/comments/" + post_id[3:]
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"sort":     sort,
 		"limit":    strconv.Itoa(limit),
-		"showmare": strconv.FormatBool(false),
+		"showmore": strconv.FormatBool(true),
+		"t":        tdur,
 	})
 	if err != nil {
 		return nil, nil, err
