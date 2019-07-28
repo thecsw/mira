@@ -90,7 +90,7 @@ func (c *Reddit) Comments(sort string, tdur string, limit int) ([]Comment, error
 	case "subreddit":
 		return c.getSubredditComments(c.Chain.Name, sort, tdur, limit)
 	default:
-		return nil, fmt.Errorf("'%s' type does not have an option for submissions", c.Chain.Type)
+		return nil, fmt.Errorf("'%s' type does not have an option for comments", c.Chain.Type)
 	}
 }
 
