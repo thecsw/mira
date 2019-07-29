@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {
@@ -30,10 +31,95 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 	defer response.Body.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
-	return buf.Bytes(), nil
+	data := buf.Bytes()
+	if err := findRedditError(data); err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
-func (c *Reddit) Me() (*Me, error) {
+func (c *Reddit) Me() *Reddit {
+	c.Chain.Type = "me"
+	return c
+}
+
+func (c *Reddit) Subreddit(name string) *Reddit {
+	c.Chain.Name = name
+	c.Chain.Type = "subreddit"
+	return c
+}
+
+func (c *Reddit) Submission(name string) *Reddit {
+	c.Chain.Name = name
+	c.Chain.Type = "submission"
+	return c
+}
+
+func (c *Reddit) Comment(name string) *Reddit {
+	c.Chain.Name = name
+	c.Chain.Type = "comment"
+	return c
+}
+
+func (c *Reddit) Redditor(name string) *Reddit {
+	c.Chain.Name = name
+	c.Chain.Type = "redditor"
+	return c
+}
+
+func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]PostListingChild, error) {
+	switch c.Chain.Type {
+	case "subreddit":
+		return c.getSubredditPosts(c.Chain.Name, sort, tdur, limit)
+	default:
+		return nil, fmt.Errorf("'%s' type does not have an option for submissions", c.Chain.Type)
+	}
+}
+
+func (c *Reddit) SubmissionsAfter(last string, limit int) ([]PostListingChild, error) {
+	switch c.Chain.Type {
+	case "subreddit":
+		return c.getSubredditPostsAfter(c.Chain.Name, last, limit)
+	default:
+		return nil, fmt.Errorf("'%s' type does not have an option for submissions", c.Chain.Type)
+	}
+}
+
+func (c *Reddit) Comments(sort string, tdur string, limit int) ([]Comment, error) {
+	switch c.Chain.Type {
+	case "subreddit":
+		return c.getSubredditComments(c.Chain.Name, sort, tdur, limit)
+	case "submission":
+		comments, _, err := c.getSubmissionComments(c.Chain.Name, sort, tdur, limit)
+		if err != nil {
+			return nil, err
+		}
+		return comments, nil
+	case "redditor":
+		return c.getRedditorComments(c.Chain.Name, sort, tdur, limit)
+	default:
+		return nil, fmt.Errorf("'%s' type does not have an option for comments", c.Chain.Type)
+	}
+}
+
+func (c *Reddit) Info() (interface{}, error) {
+	switch c.Chain.Type {
+	case "me":
+		return c.getMe()
+	case "submission":
+		return c.getSubmission(c.Chain.Name)
+	case "comment":
+		return c.getComment(c.Chain.Name)
+	case "subreddit":
+		return c.getSubreddit(c.Chain.Name)
+	case "redditor":
+		return c.getUser(c.Chain.Name)
+	default:
+		return nil, fmt.Errorf("returning type is not defined")
+	}
+}
+
+func (c *Reddit) getMe() (*Me, error) {
 	target := RedditOauth + "/api/v1/me"
 	ans, err := c.MiraRequest("GET", target, nil)
 	if err != nil {
@@ -44,17 +130,7 @@ func (c *Reddit) Me() (*Me, error) {
 	return ret, nil
 }
 
-func (c *Reddit) GetComment(id string) (*Comment, error) {
-	target := RedditOauth + "/api/info.json"
-	ans, err := c.MiraRequest("GET", target, map[string]string{
-		"id": id,
-	})
-	ret := CommentListing{}
-	json.Unmarshal(ans, ret)
-	return &ret.GetChildren()[0], err
-}
-
-func (c *Reddit) GetSubmission(id string) (*PostListing, error) {
+func (c *Reddit) getSubmission(id string) (*PostListing, error) {
 	target := RedditOauth + "/api/info.json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"id": id,
@@ -62,6 +138,16 @@ func (c *Reddit) GetSubmission(id string) (*PostListing, error) {
 	ret := &PostListing{}
 	json.Unmarshal(ans, ret)
 	return ret, err
+}
+
+func (c *Reddit) getComment(id string) (*Comment, error) {
+	target := RedditOauth + "/api/info.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"id": id,
+	})
+	ret := CommentListing{}
+	json.Unmarshal(ans, ret)
+	return &ret.GetChildren()[0], err
 }
 
 // This function will return the submission id of a comment
@@ -89,8 +175,12 @@ func (c *Reddit) GetSubmission(id string) (*PostListing, error) {
 //
 // NOTE: If any error occurs, the method will return on error object.
 // If it takes more than 12 calls, the function bails out.
-func (c *Reddit) GetSubmissionFromComment(comment_id string) (string, error) {
-	current := comment_id
+func (c *Reddit) Root() (string, error) {
+	err := c.checkType("comment")
+	if err != nil {
+		return "", err
+	}
+	current := c.Chain.Name
 	// Not a comment passed
 	if string(current[1]) != "1" {
 		return "", errors.New("the passed ID is not a comment")
@@ -118,7 +208,7 @@ func (c *Reddit) GetSubmissionFromComment(comment_id string) (string, error) {
 	return current, nil
 }
 
-func (c *Reddit) GetUser(name string) (*Redditor, error) {
+func (c *Reddit) getUser(name string) (*Redditor, error) {
 	target := RedditOauth + "/user/" + name + "/about"
 	ans, err := c.MiraRequest("GET", target, nil)
 	ret := &Redditor{}
@@ -126,7 +216,7 @@ func (c *Reddit) GetUser(name string) (*Redditor, error) {
 	return ret, err
 }
 
-func (c *Reddit) GetSubreddit(name string) (*Subreddit, error) {
+func (c *Reddit) getSubreddit(name string) (*Subreddit, error) {
 	target := RedditOauth + "/r/" + name + "/about"
 	ans, err := c.MiraRequest("GET", target, nil)
 	ret := &Subreddit{}
@@ -141,7 +231,7 @@ func (c *Reddit) GetSubreddit(name string) (*Subreddit, error) {
 // Time options: "all", "year", "month", "week", "day", "hour"
 //
 // Limit is any numerical value, so 0 <= limit <= 100
-func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit int) ([]PostListingChild, error) {
+func (c *Reddit) getSubredditPosts(sr string, sort string, tdur string, limit int) ([]PostListingChild, error) {
 	target := RedditOauth + "/r/" + sr + "/" + sort + ".json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"limit": strconv.Itoa(limit),
@@ -152,7 +242,7 @@ func (c *Reddit) GetSubredditPosts(sr string, sort string, tdur string, limit in
 	return ret.GetChildren(), err
 }
 
-func (c *Reddit) GetSubredditComments(sr string, sort string, tdur string, limit int) ([]Comment, error) {
+func (c *Reddit) getSubredditComments(sr string, sort string, tdur string, limit int) ([]Comment, error) {
 	target := RedditOauth + "/r/" + sr + "/comments.json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"sort":  sort,
@@ -164,15 +254,40 @@ func (c *Reddit) GetSubredditComments(sr string, sort string, tdur string, limit
 	return ret.GetChildren(), err
 }
 
-func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, limit int) ([]Comment, []string, error) {
+func (c *Reddit) getRedditorComments(user string, sort string, tdur string, limit int) ([]Comment, error) {
+	target := RedditOauth + "/u/" + user + "/comments.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"sort":  sort,
+		"limit": strconv.Itoa(limit),
+		"t":     tdur,
+	})
+	ret := &CommentListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
+}
+
+func (c *Reddit) getRedditorCommentsAfter(user string, sort string, last string, limit int) ([]Comment, error) {
+	target := RedditOauth + "/u/" + user + "/comments.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"sort":   sort,
+		"limit":  strconv.Itoa(limit),
+		"before": last,
+	})
+	ret := &CommentListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
+}
+
+func (c *Reddit) getSubmissionComments(post_id string, sort string, tdur string, limit int) ([]Comment, []string, error) {
 	if string(post_id[1]) != "3" {
 		return nil, nil, errors.New("the passed ID36 is not a submission")
 	}
-	target := RedditOauth + "/r/" + sr + "/comments/" + post_id[3:]
+	target := RedditOauth + "/comments/" + post_id[3:]
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"sort":     sort,
 		"limit":    strconv.Itoa(limit),
-		"showmare": strconv.FormatBool(false),
+		"showmore": strconv.FormatBool(true),
+		"t":        tdur,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -200,7 +315,7 @@ func (c *Reddit) GetSubmissionComments(sr string, post_id string, sort string, l
 // Limit is any numerical value, so 0 <= limit <= 100
 //
 // Anchor options are submissions full thing, for example: t3_bqqwm3
-func (c *Reddit) GetSubredditPostsAfter(sr string, last string, limit int) ([]PostListingChild, error) {
+func (c *Reddit) getSubredditPostsAfter(sr string, last string, limit int) ([]PostListingChild, error) {
 	target := RedditOauth + "/r/" + sr + "/new.json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"limit":  strconv.Itoa(limit),
@@ -211,7 +326,18 @@ func (c *Reddit) GetSubredditPostsAfter(sr string, last string, limit int) ([]Po
 	return ret.GetChildren(), err
 }
 
-func (c *Reddit) GetSubredditCommentsAfter(sr string, sort string, last string, limit int) ([]Comment, error) {
+func (c *Reddit) CommentsAfter(sort string, last string, limit int) ([]Comment, error) {
+	switch c.Chain.Type {
+	case "subreddit":
+		return c.getSubredditCommentsAfter(c.Chain.Name, sort, last, limit)
+	case "redditor":
+		return c.getRedditorCommentsAfter(c.Chain.Name, sort, last, limit)
+	default:
+		return nil, fmt.Errorf("'%s' type does not have an option for comments", c.Chain.Type)
+	}
+}
+
+func (c *Reddit) getSubredditCommentsAfter(sr string, sort string, last string, limit int) ([]Comment, error) {
 	target := RedditOauth + "/r/" + sr + "/comments.json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"sort":   sort,
@@ -223,11 +349,15 @@ func (c *Reddit) GetSubredditCommentsAfter(sr string, sort string, last string, 
 	return ret.GetChildren(), err
 }
 
-func (c *Reddit) Submit(sr string, title string, text string) (*Submission, error) {
+func (c *Reddit) Submit(title string, text string) (*Submission, error) {
+	err := c.checkType("subreddit")
+	if err != nil {
+		return nil, err
+	}
 	target := RedditOauth + "/api/submit"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"title":    title,
-		"sr":       sr,
+		"sr":       c.Chain.Name,
 		"text":     text,
 		"kind":     "self",
 		"resubmit": "true",
@@ -238,11 +368,16 @@ func (c *Reddit) Submit(sr string, title string, text string) (*Submission, erro
 	return ret, err
 }
 
-func (c *Reddit) Reply(comment_id string, text string) (*CommentWrap, error) {
+func (c *Reddit) Reply(text string) (*CommentWrap, error) {
+	err := c.checkType("comment")
+	if err != nil {
+		return nil, err
+	}
+
 	target := RedditOauth + "/api/comment"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
-		"thing_id": comment_id,
+		"thing_id": c.Chain.Name,
 		"api_type": "json",
 	})
 	ret := &CommentWrap{}
@@ -250,11 +385,15 @@ func (c *Reddit) Reply(comment_id string, text string) (*CommentWrap, error) {
 	return ret, err
 }
 
-func (c *Reddit) Comment(submission_id, text string) (*CommentWrap, error) {
+func (c *Reddit) Save(text string) (*CommentWrap, error) {
+	err := c.checkType("submission")
+	if err != nil {
+		return nil, err
+	}
 	target := RedditOauth + "/api/comment"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
-		"thing_id": submission_id,
+		"thing_id": c.Chain.Name,
 		"api_type": "json",
 	})
 	ret := &CommentWrap{}
@@ -262,28 +401,40 @@ func (c *Reddit) Comment(submission_id, text string) (*CommentWrap, error) {
 	return ret, err
 }
 
-func (c *Reddit) DeleteComment(comment_id string) error {
+func (c *Reddit) Delete() error {
+	err := c.checkType("comment", "submission")
+	if err != nil {
+		return err
+	}
 	target := RedditOauth + "/api/del"
-	_, err := c.MiraRequest("POST", target, map[string]string{
-		"id":       comment_id,
+	_, err = c.MiraRequest("POST", target, map[string]string{
+		"id":       c.Chain.Name,
 		"api_type": "json",
 	})
 	return err
 }
 
-func (c *Reddit) Approve(comment_id string) error {
+func (c *Reddit) Approve() error {
+	err := c.checkType("comment")
+	if err != nil {
+		return err
+	}
 	target := RedditOauth + "/api/approve"
-	_, err := c.MiraRequest("POST", target, map[string]string{
-		"id":       comment_id,
+	_, err = c.MiraRequest("POST", target, map[string]string{
+		"id":       c.Chain.Name,
 		"api_type": "json",
 	})
 	return err
 }
 
-func (c *Reddit) Distinguish(comment_id string, how string, sticky bool) error {
+func (c *Reddit) Distinguish(how string, sticky bool) error {
+	err := c.checkType("comment")
+	if err != nil {
+		return err
+	}
 	target := RedditOauth + "/api/distinguish"
-	_, err := c.MiraRequest("POST", target, map[string]string{
-		"id":       comment_id,
+	_, err = c.MiraRequest("POST", target, map[string]string{
+		"id":       c.Chain.Name,
 		"how":      how,
 		"sticky":   strconv.FormatBool(sticky),
 		"api_type": "json",
@@ -291,11 +442,15 @@ func (c *Reddit) Distinguish(comment_id string, how string, sticky bool) error {
 	return err
 }
 
-func (c *Reddit) EditComment(comment_id, text string) (*CommentWrap, error) {
+func (c *Reddit) Edit(text string) (*CommentWrap, error) {
+	err := c.checkType("comment")
+	if err != nil {
+		return nil, err
+	}
 	target := RedditOauth + "/api/editusertext"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
-		"thing_id": comment_id,
+		"thing_id": c.Chain.Name,
 		"api_type": "json",
 	})
 	ret := &CommentWrap{}
@@ -303,12 +458,16 @@ func (c *Reddit) EditComment(comment_id, text string) (*CommentWrap, error) {
 	return ret, err
 }
 
-func (c *Reddit) Compose(to, subject, text string) error {
+func (c *Reddit) Compose(subject, text string) error {
+	err := c.checkType("redditor")
+	if err != nil {
+		return err
+	}
 	target := RedditOauth + "/api/compose"
-	_, err := c.MiraRequest("POST", target, map[string]string{
+	_, err = c.MiraRequest("POST", target, map[string]string{
 		"subject":  subject,
 		"text":     text,
-		"to":       to,
+		"to":       c.Chain.Name,
 		"api_type": "json",
 	})
 	return err
@@ -350,4 +509,37 @@ func (c *Reddit) SubredditUpdateSidebar(sr, text string) ([]byte, error) {
 		"type":        "public",
 		"api_type":    "json",
 	})
+}
+
+func (c *Reddit) checkType(rtype ...string) error {
+	if c.Chain.Name == "" {
+		return fmt.Errorf("identifier is empty")
+	}
+	if !findElem(c.Chain.Type, rtype) {
+		return fmt.Errorf("the passed type is not a valid type for this call | expected: %s", strings.Join(rtype, ", "))
+	}
+	return nil
+}
+
+func findElem(elem string, arr []string) bool {
+	for _, v := range arr {
+		if elem == v {
+			return true
+		}
+	}
+	return false
+}
+
+type RedditErr struct {
+	Message string `json:"message"`
+	Error   string `json:"error"`
+}
+
+func findRedditError(data []byte) error {
+	object := &RedditErr{}
+	json.Unmarshal(data, object)
+	if object.Message != "" || object.Error != "" {
+		return fmt.Errorf("%s | error code: %s", object.Message, object.Error)
+	}
+	return nil
 }

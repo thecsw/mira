@@ -1,11 +1,9 @@
 package mira
 
-import (
-	"time"
-)
+import "time"
 
-// c is the channel with all unread messages
-// stop is the channel to stop the stream. Do stop <- true to stop the loop
+// // c is the channel with all unread messages
+// // stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamCommentReplies() (<-chan Comment, chan bool) {
 	c := make(chan Comment, 25)
 	stop := make(chan bool, 1)
@@ -30,12 +28,29 @@ func (r *Reddit) StreamCommentReplies() (<-chan Comment, chan bool) {
 	return c, stop
 }
 
-// c is the channel with all comments
-// stop is the channel to stop the stream. Do stop <- true to stop the loop
-func (r *Reddit) StreamNewComments(sr string) (<-chan Comment, chan bool) {
+// // c is the channel with all comments
+// // stop is the channel to stop the stream. Do stop <- true to stop the loop
+func (r *Reddit) StreamComments() (<-chan Comment, chan bool, error) {
+	err := r.checkType("subreddit", "redditor")
+	if err != nil {
+		return nil, nil, err
+	}
+	switch r.Chain.Type {
+	case "subreddit":
+		return r.streamSubredditComments()
+	case "redditor":
+		return r.streamRedditorComments()
+	}
+	return nil, nil, nil
+}
+
+func (r *Reddit) streamSubredditComments() (<-chan Comment, chan bool, error) {
 	c := make(chan Comment, 25)
 	stop := make(chan bool, 1)
-	anchor, _ := r.GetSubredditComments(sr, "new", "hour", 1)
+	anchor, err := r.Subreddit(r.Chain.Name).Comments("new", "hour", 1)
+	if err != nil {
+		return nil, nil, err
+	}
 	last := ""
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
@@ -43,7 +58,7 @@ func (r *Reddit) StreamNewComments(sr string) (<-chan Comment, chan bool) {
 	go func() {
 		for {
 			stop <- false
-			un, _ := r.GetSubredditCommentsAfter(sr, "new", last, 25)
+			un, _ := r.Subreddit(r.Chain.Name).CommentsAfter("new", last, 25)
 			for _, v := range un {
 				c <- v
 			}
@@ -56,13 +71,16 @@ func (r *Reddit) StreamNewComments(sr string) (<-chan Comment, chan bool) {
 			}
 		}
 	}()
-	return c, stop
+	return c, stop, nil
 }
 
-func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) {
-	c := make(chan PostListingChild, 25)
+func (r *Reddit) streamRedditorComments() (<-chan Comment, chan bool, error) {
+	c := make(chan Comment, 25)
 	stop := make(chan bool, 1)
-	anchor, _ := r.GetSubredditPosts(sr, "new", "hour", 1)
+	anchor, err := r.Redditor(r.Chain.Name).Comments("new", "hour", 1)
+	if err != nil {
+		return nil, nil, err
+	}
 	last := ""
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
@@ -70,7 +88,37 @@ func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) 
 	go func() {
 		for {
 			stop <- false
-			new, _ := r.GetSubredditPostsAfter(sr, last, r.Stream.PostListSlice)
+			un, _ := r.Redditor(r.Chain.Name).CommentsAfter("new", last, 25)
+			for _, v := range un {
+				c <- v
+			}
+			if len(un) > 0 {
+				last = un[0].GetId()
+			}
+			time.Sleep(r.Stream.CommentListInterval * time.Second)
+			if <-stop {
+				return
+			}
+		}
+	}()
+	return c, stop, nil
+}
+
+func (r *Reddit) StreamSubmissions() (<-chan PostListingChild, chan bool, error) {
+	c := make(chan PostListingChild, 25)
+	stop := make(chan bool, 1)
+	anchor, err := r.Subreddit(r.Chain.Name).Submissions("new", "hour", 1)
+	if err != nil {
+		return nil, nil, err
+	}
+	last := ""
+	if len(anchor) > 0 {
+		last = anchor[0].GetId()
+	}
+	go func() {
+		for {
+			stop <- false
+			new, _ := r.Subreddit(r.Chain.Name).SubmissionsAfter(last, r.Stream.PostListSlice)
 			if len(new) > 0 {
 				last = new[0].GetId()
 			}
@@ -83,5 +131,5 @@ func (r *Reddit) StreamNewPosts(sr string) (<-chan PostListingChild, chan bool) 
 			}
 		}
 	}()
-	return c, stop
+	return c, stop, nil
 }

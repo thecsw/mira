@@ -9,6 +9,7 @@ type Reddit struct {
 	Token    string  `json:"access_token"`
 	Duration float64 `json:"expires_in"`
 	Creds    Credentials
+	Chain    ChainVals
 	Stream   Streaming
 	Values   RedditVals
 	Client   *http.Client
@@ -22,4 +23,9 @@ type Streaming struct {
 
 type RedditVals struct {
 	GetSubmissionFromCommentTries int
+}
+
+type ChainVals struct {
+	Name string
+	Type string
 }
