@@ -105,6 +105,20 @@ func (r *Reddit) streamRedditorComments() (<-chan Comment, chan bool, error) {
 }
 
 func (r *Reddit) StreamSubmissions() (<-chan PostListingChild, chan bool, error) {
+	err := r.checkType("subreddit", "redditor")
+	if err != nil {
+		return nil, nil, err
+	}
+	switch r.Chain.Type {
+	case "subreddit":
+		return r.streamSubredditSubmissions()
+	case "redditor":
+		return r.streamRedditorSubmissions()
+	}
+	return nil, nil, nil
+}
+
+func (r *Reddit) streamSubredditSubmissions() (<-chan PostListingChild, chan bool, error) {
 	c := make(chan PostListingChild, 25)
 	stop := make(chan bool, 1)
 	anchor, err := r.Subreddit(r.Chain.Name).Submissions("new", "hour", 1)
@@ -119,6 +133,36 @@ func (r *Reddit) StreamSubmissions() (<-chan PostListingChild, chan bool, error)
 		for {
 			stop <- false
 			new, _ := r.Subreddit(r.Chain.Name).SubmissionsAfter(last, r.Stream.PostListSlice)
+			if len(new) > 0 {
+				last = new[0].GetId()
+			}
+			for i := range new {
+				c <- new[len(new)-i-1]
+			}
+			time.Sleep(r.Stream.PostListInterval * time.Second)
+			if <-stop {
+				return
+			}
+		}
+	}()
+	return c, stop, nil
+}
+
+func (r *Reddit) streamRedditorSubmissions() (<-chan PostListingChild, chan bool, error) {
+	c := make(chan PostListingChild, 25)
+	stop := make(chan bool, 1)
+	anchor, err := r.Redditor(r.Chain.Name).Submissions("new", "hour", 1)
+	if err != nil {
+		return nil, nil, err
+	}
+	last := ""
+	if len(anchor) > 0 {
+		last = anchor[0].GetId()
+	}
+	go func() {
+		for {
+			stop <- false
+			new, _ := r.Redditor(r.Chain.Name).SubmissionsAfter(last, r.Stream.PostListSlice)
 			if len(new) > 0 {
 				last = new[0].GetId()
 			}

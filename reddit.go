@@ -71,6 +71,8 @@ func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]PostListing
 	switch c.Chain.Type {
 	case "subreddit":
 		return c.getSubredditPosts(c.Chain.Name, sort, tdur, limit)
+	case "redditor":
+		return c.getRedditorPosts(c.Chain.Name, sort, tdur, limit)
 	default:
 		return nil, fmt.Errorf("'%s' type does not have an option for submissions", c.Chain.Type)
 	}
@@ -80,6 +82,8 @@ func (c *Reddit) SubmissionsAfter(last string, limit int) ([]PostListingChild, e
 	switch c.Chain.Type {
 	case "subreddit":
 		return c.getSubredditPostsAfter(c.Chain.Name, last, limit)
+	case "redditor":
+		return c.getRedditorPostsAfter(c.Chain.Name, last, limit)
 	default:
 		return nil, fmt.Errorf("'%s' type does not have an option for submissions", c.Chain.Type)
 	}
@@ -222,6 +226,28 @@ func (c *Reddit) getSubreddit(name string) (*Subreddit, error) {
 	ret := &Subreddit{}
 	json.Unmarshal(ans, ret)
 	return ret, err
+}
+
+func (c *Reddit) getRedditorPosts(user string, sort string, tdur string, limit int) ([]PostListingChild, error) {
+	target := RedditOauth + "/u/" + user + "/submitted/" + sort + ".json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"limit": strconv.Itoa(limit),
+		"t":     tdur,
+	})
+	ret := &PostListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
+}
+
+func (c *Reddit) getRedditorPostsAfter(user string, last string, limit int) ([]PostListingChild, error) {
+	target := RedditOauth + "/u/" + user + "/submitted/new.json"
+	ans, err := c.MiraRequest("GET", target, map[string]string{
+		"limit":  strconv.Itoa(limit),
+		"before": last,
+	})
+	ret := &PostListing{}
+	json.Unmarshal(ans, ret)
+	return ret.GetChildren(), err
 }
 
 // Get submisssions from a subreddit up to a specified limit sorted by the given parameter
@@ -443,7 +469,7 @@ func (c *Reddit) Distinguish(how string, sticky bool) error {
 }
 
 func (c *Reddit) Edit(text string) (*CommentWrap, error) {
-	err := c.checkType("comment")
+	err := c.checkType("comment", "submission")
 	if err != nil {
 		return nil, err
 	}
