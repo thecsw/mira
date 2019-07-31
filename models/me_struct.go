@@ -1,4 +1,4 @@
-package mira
+package models
 
 type Me struct {
 	IsEmployee              bool        `json:"is_employee"`

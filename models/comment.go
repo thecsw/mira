@@ -1,4 +1,4 @@
-package mira
+package models
 
 func (c CommentWrap) GetId() string          { return c.Json.Data.Things[0].Data.Name }
 func (c CommentWrap) GetSubredditId() string { return c.Json.Data.Things[0].Data.SubredditId }

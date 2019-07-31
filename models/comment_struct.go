@@ -1,4 +1,4 @@
-package mira
+package models
 
 type CommentWrap struct {
 	Json CommentJson `json:"json"`

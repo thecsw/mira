@@ -1,4 +1,4 @@
-package mira
+package models
 
 func (p *PostListing) GetChildren() []PostListingChild   { return p.Data.Children }
 func (plc *PostListingChild) GetSubreddit() string       { return plc.Data.Subreddit }

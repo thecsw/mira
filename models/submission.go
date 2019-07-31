@@ -1,4 +1,4 @@
-package mira
+package models
 
 func (s *Submission) GetId() string           { return s.Json.Data.Name }
 func (s *Submission) GetDraftsCount() float64 { return s.Json.Data.DraftsCount }

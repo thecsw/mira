@@ -1,4 +1,4 @@
-package mira
+package models
 
 type Submission struct {
 	Json SubmissionJson `json:"json"`

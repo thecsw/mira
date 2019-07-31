@@ -1,4 +1,4 @@
-package mira
+package models
 
 func (r *Redditor) IsEmployee() bool       { return r.Data.IsEmployee }
 func (r *Redditor) GetName() string        { return r.Data.Name }

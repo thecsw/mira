@@ -1,4 +1,4 @@
-package mira
+package models
 
 import (
 	"encoding/json"

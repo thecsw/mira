@@ -1,4 +1,4 @@
-package mira
+package models
 
 func (l *CommentListing) GetChildren() []Comment { return l.Data.Children }
 func (ldc *Comment) GetId() string               { return ldc.Data.Name }

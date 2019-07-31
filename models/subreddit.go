@@ -1,4 +1,4 @@
-package mira
+package models
 
 func (s *Subreddit) GetId() string                { return s.Data.Name }
 func (s *Subreddit) GetParentId() string          { return s.Data.Name }

@@ -1,4 +1,4 @@
-package mira
+package models
 
 type Redditor struct {
 	Kind string       `json:"kind"`

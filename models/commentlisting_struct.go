@@ -1,4 +1,4 @@
-package mira
+package models
 
 type CommentListing struct {
 	Kind string             `json:"kind"`

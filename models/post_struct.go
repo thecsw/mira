@@ -1,4 +1,4 @@
-package mira
+package models
 
 type PostListing struct {
 	Kind string          `json:"kind"`

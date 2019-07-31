@@ -1,4 +1,4 @@
-package mira
+package models
 
 func (me *Me) GetId() string        { return me.Id }
 func (me *Me) GetName() string      { return me.Name }
