@@ -43,8 +43,8 @@ func (c *Reddit) Me() *Reddit {
 	return c
 }
 
-func (c *Reddit) Subreddit(name string) *Reddit {
-	c.Chain.Name = name
+func (c *Reddit) Subreddit(name ...string) *Reddit {
+	c.Chain.Name = strings.Join(name, "+")
 	c.Chain.Type = "subreddit"
 	return c
 }
@@ -106,7 +106,7 @@ func (c *Reddit) Comments(sort string, tdur string, limit int) ([]Comment, error
 	}
 }
 
-func (c *Reddit) Info() (interface{}, error) {
+func (c *Reddit) Info() (MiraInterface, error) {
 	switch c.Chain.Type {
 	case "me":
 		return c.getMe()
@@ -134,14 +134,14 @@ func (c *Reddit) getMe() (*Me, error) {
 	return ret, nil
 }
 
-func (c *Reddit) getSubmission(id string) (*PostListing, error) {
+func (c *Reddit) getSubmission(id string) (*PostListingChild, error) {
 	target := RedditOauth + "/api/info.json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"id": id,
 	})
 	ret := &PostListing{}
 	json.Unmarshal(ans, ret)
-	return ret, err
+	return &ret.GetChildren()[0], err
 }
 
 func (c *Reddit) getComment(id string) (*Comment, error) {
@@ -500,20 +500,32 @@ func (c *Reddit) Compose(subject, text string) error {
 }
 
 func (c *Reddit) ReadMessage(message_id string) error {
+	err := c.checkType("me")
+	if err != nil {
+		return err
+	}
 	target := RedditOauth + "/api/read_message"
-	_, err := c.MiraRequest("POST", target, map[string]string{
+	_, err = c.MiraRequest("POST", target, map[string]string{
 		"id": message_id,
 	})
 	return err
 }
 
 func (c *Reddit) ReadAllMessages() error {
+	err := c.checkType("me")
+	if err != nil {
+		return err
+	}
 	target := RedditOauth + "/api/read_all_messages"
-	_, err := c.MiraRequest("POST", target, nil)
+	_, err = c.MiraRequest("POST", target, nil)
 	return err
 }
 
 func (c *Reddit) ListUnreadMessages() ([]Comment, error) {
+	err := c.checkType("me")
+	if err != nil {
+		return nil, err
+	}
 	target := RedditOauth + "/message/unread"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"mark": "true",
@@ -523,18 +535,23 @@ func (c *Reddit) ListUnreadMessages() ([]Comment, error) {
 	return ret.GetChildren(), err
 }
 
-func (c *Reddit) SubredditUpdateSidebar(sr, text string) ([]byte, error) {
+func (c *Reddit) SubredditUpdateSidebar(text string) error {
+	err := c.checkType("subreddit")
+	if err != nil {
+		return err
+	}
 	target := RedditOauth + "/api/site_admin"
-	return c.MiraRequest("POST", target, map[string]string{
-		"sr":          sr,
+	_, err = c.MiraRequest("POST", target, map[string]string{
+		"sr":          c.Chain.Name,
 		"name":        "None",
 		"description": text,
-		"title":       sr,
+		"title":       c.Chain.Name,
 		"wikimode":    "anyone",
 		"link_type":   "any",
 		"type":        "public",
 		"api_type":    "json",
 	})
+	return err
 }
 
 func (c *Reddit) checkType(rtype ...string) error {
