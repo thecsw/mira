@@ -56,13 +56,14 @@ func (r *Reddit) streamSubredditComments() (<-chan models.Comment, chan bool, er
 		return nil, nil, err
 	}
 	last := ""
+	subreddit := r.Chain.Name
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
 	}
 	go func() {
 		for {
 			stop <- false
-			un, _ := r.Subreddit(r.Chain.Name).CommentsAfter("new", last, 25)
+			un, _ := r.Subreddit(subreddit).CommentsAfter("new", last, 25)
 			for _, v := range un {
 				c <- v
 			}
@@ -86,13 +87,14 @@ func (r *Reddit) streamRedditorComments() (<-chan models.Comment, chan bool, err
 		return nil, nil, err
 	}
 	last := ""
+	redditor := r.Chain.Name
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
 	}
 	go func() {
 		for {
 			stop <- false
-			un, _ := r.Redditor(r.Chain.Name).CommentsAfter("new", last, 25)
+			un, _ := r.Redditor(redditor).CommentsAfter("new", last, 25)
 			for _, v := range un {
 				c <- v
 			}
@@ -130,13 +132,14 @@ func (r *Reddit) streamSubredditSubmissions() (<-chan models.PostListingChild, c
 		return nil, nil, err
 	}
 	last := ""
+	subreddit := r.Chain.Name
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
 	}
 	go func() {
 		for {
 			stop <- false
-			new, _ := r.Subreddit(r.Chain.Name).SubmissionsAfter(last, r.Stream.PostListSlice)
+			new, _ := r.Subreddit(subreddit).SubmissionsAfter(last, r.Stream.PostListSlice)
 			if len(new) > 0 {
 				last = new[0].GetId()
 			}
@@ -160,13 +163,14 @@ func (r *Reddit) streamRedditorSubmissions() (<-chan models.PostListingChild, ch
 		return nil, nil, err
 	}
 	last := ""
+	redditor := r.Chain.Name
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
 	}
 	go func() {
 		for {
 			stop <- false
-			new, _ := r.Redditor(r.Chain.Name).SubmissionsAfter(last, r.Stream.PostListSlice)
+			new, _ := r.Redditor(redditor).SubmissionsAfter(last, r.Stream.PostListSlice)
 			if len(new) > 0 {
 				last = new[0].GetId()
 			}
