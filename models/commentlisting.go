@@ -13,6 +13,7 @@ func (ldc *Comment) GetCreated() float64         { return ldc.Data.Created }
 func (ldc *Comment) GetAuthor() string           { return ldc.Data.Author }
 func (ldc *Comment) IsComment() bool             { return ldc.Kind == "t1" }
 func (ldc *Comment) IsCommentReply() bool        { return ldc.Data.Subject == "comment reply" }
+func (ldc *Comment) IsMention() bool             { return ldc.Data.Subject == "username mention" }
 func (ldc *Comment) GetName() string             { return ldc.Data.Name }
 func (ldc *Comment) GetKarma() float64           { return ldc.Data.Score }
 func (ldc *Comment) GetUrl() string              { return ldc.Data.LinkTitle }
