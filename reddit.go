@@ -41,6 +41,7 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 }
 
 func (c *Reddit) Me() *Reddit {
+	c.Chain.Name = c.Creds.Username
 	c.Chain.Type = "me"
 	return c
 }

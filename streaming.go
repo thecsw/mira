@@ -1,7 +1,6 @@
 package mira
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/thecsw/mira/models"
@@ -22,7 +21,7 @@ func (r *Reddit) StreamCommentReplies() (<-chan *models.Comment, chan bool) {
 				if v.IsCommentReply() {
 					c <- &v
 					// You can read the message with
-					//r.ReadMessage(v.GetId())
+					r.ReadMessage(v.GetId())
 				}
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
@@ -43,14 +42,13 @@ func (r *Reddit) StreamMentions() (<-chan *models.Comment, chan bool) {
 		for {
 			stop <- false
 			un, _ := r.Me().ListUnreadMessages()
-			fmt.Println(un)
 			for _, v := range un {
 				// Only process comment replies and
 				// mark them as read.
 				if v.IsMention() {
 					c <- &v
 					// You can read the message with
-					// r.ReadMessage(v.GetId())
+					r.ReadMessage(v.GetId())
 				}
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
