@@ -15,7 +15,7 @@ func (r *Reddit) StreamCommentReplies() (<-chan *models.Comment, chan bool) {
 	go func() {
 		for {
 			stop <- false
-			un, err := r.Me().ListUnreadMessages()
+			un, _ := r.Me().ListUnreadMessages()
 			for _, v := range un {
 				// Only process comment replies and
 				// mark them as read.
