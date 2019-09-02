@@ -531,7 +531,7 @@ func (c *Reddit) ListUnreadMessages() ([]models.Comment, error) {
 	}
 	target := RedditOauth + "/message/unread"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
-		"mark": "true",
+		"mark": "false",
 	})
 	ret := &models.CommentListing{}
 	json.Unmarshal(ans, ret)
