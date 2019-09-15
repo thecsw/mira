@@ -41,28 +41,23 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 }
 
 func (c *Reddit) Me() *Reddit {
-	c.addQueue(c.Creds.Username, "me")
-	return c
+	return c.addQueue(c.Creds.Username, "me")
 }
 
 func (c *Reddit) Subreddit(name ...string) *Reddit {
-	c.addQueue(strings.Join(name, "+"), "subreddit")
-	return c
+	return c.addQueue(strings.Join(name, "+"), "subreddit")
 }
 
 func (c *Reddit) Submission(name string) *Reddit {
-	c.addQueue(name, "submission")
-	return c
+	return c.addQueue(name, "submission")
 }
 
 func (c *Reddit) Comment(name string) *Reddit {
-	c.addQueue(name, "comment")
-	return c
+	return c.addQueue(name, "comment")
 }
 
 func (c *Reddit) Redditor(name string) *Reddit {
-	c.addQueue(name, "redditor")
-	return c
+	return c.addQueue(name, "redditor")
 }
 
 func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]models.PostListingChild, error) {
@@ -568,20 +563,17 @@ func (c *Reddit) checkType(rtype ...string) (string, string, error) {
 	return name, ttype, nil
 }
 
-func (c *Reddit) addQueue(name string, ttype string) {
-	c.Chain.Name = append(c.Chain.Name, name)
-	c.Chain.Type = append(c.Chain.Type, ttype)
+func (c *Reddit) addQueue(name string, ttype string) *Reddit {
+	c.Chain = append(c.Chain, ChainVals{Name: name, Type: ttype})
+	return c
 }
 
 func (c *Reddit) getQueue() (string, string) {
-	if len(c.Chain.Name) < 1 || len(c.Chain.Type) < 1 {
+	if len(c.Chain) < 1 {
 		return "", ""
 	}
-	name := c.Chain.Name[0]
-	c.Chain.Name = c.Chain.Name[1:]
-	type_t := c.Chain.Type[0]
-	c.Chain.Type = c.Chain.Type[1:]
-	return name, type_t
+	defer func() { c.Chain = c.Chain[1:] }()
+	return c.Chain[0].Name, c.Chain[0].Type
 }
 
 func findElem(elem string, arr []string) bool {
