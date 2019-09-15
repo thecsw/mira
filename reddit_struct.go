@@ -26,6 +26,6 @@ type RedditVals struct {
 }
 
 type ChainVals struct {
-	Name string
-	Type string
+	Name []string
+	Type []string
 }

@@ -41,86 +41,85 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 }
 
 func (c *Reddit) Me() *Reddit {
-	c.Chain.Name = c.Creds.Username
-	c.Chain.Type = "me"
+	c.addQueue(c.Creds.Username, "me")
 	return c
 }
 
 func (c *Reddit) Subreddit(name ...string) *Reddit {
-	c.Chain.Name = strings.Join(name, "+")
-	c.Chain.Type = "subreddit"
+	c.addQueue(strings.Join(name, "+"), "subreddit")
 	return c
 }
 
 func (c *Reddit) Submission(name string) *Reddit {
-	c.Chain.Name = name
-	c.Chain.Type = "submission"
+	c.addQueue(name, "submission")
 	return c
 }
 
 func (c *Reddit) Comment(name string) *Reddit {
-	c.Chain.Name = name
-	c.Chain.Type = "comment"
+	c.addQueue(name, "comment")
 	return c
 }
 
 func (c *Reddit) Redditor(name string) *Reddit {
-	c.Chain.Name = name
-	c.Chain.Type = "redditor"
+	c.addQueue(name, "redditor")
 	return c
 }
 
 func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]models.PostListingChild, error) {
-	switch c.Chain.Type {
+	name, ttype := c.getQueue()
+	switch ttype {
 	case "subreddit":
-		return c.getSubredditPosts(c.Chain.Name, sort, tdur, limit)
+		return c.getSubredditPosts(name, sort, tdur, limit)
 	case "redditor":
-		return c.getRedditorPosts(c.Chain.Name, sort, tdur, limit)
+		return c.getRedditorPosts(name, sort, tdur, limit)
 	default:
-		return nil, fmt.Errorf("'%s' type does not have an option for submissions", c.Chain.Type)
+		return nil, fmt.Errorf("'%s' type does not have an option for submissions", ttype)
 	}
 }
 
 func (c *Reddit) SubmissionsAfter(last string, limit int) ([]models.PostListingChild, error) {
-	switch c.Chain.Type {
+	name, ttype := c.getQueue()
+	switch ttype {
 	case "subreddit":
-		return c.getSubredditPostsAfter(c.Chain.Name, last, limit)
+		return c.getSubredditPostsAfter(name, last, limit)
 	case "redditor":
-		return c.getRedditorPostsAfter(c.Chain.Name, last, limit)
+		return c.getRedditorPostsAfter(name, last, limit)
 	default:
-		return nil, fmt.Errorf("'%s' type does not have an option for submissions", c.Chain.Type)
+		return nil, fmt.Errorf("'%s' type does not have an option for submissions", ttype)
 	}
 }
 
 func (c *Reddit) Comments(sort string, tdur string, limit int) ([]models.Comment, error) {
-	switch c.Chain.Type {
+	name, ttype := c.getQueue()
+	switch ttype {
 	case "subreddit":
-		return c.getSubredditComments(c.Chain.Name, sort, tdur, limit)
+		return c.getSubredditComments(name, sort, tdur, limit)
 	case "submission":
-		comments, _, err := c.getSubmissionComments(c.Chain.Name, sort, tdur, limit)
+		comments, _, err := c.getSubmissionComments(name, sort, tdur, limit)
 		if err != nil {
 			return nil, err
 		}
 		return comments, nil
 	case "redditor":
-		return c.getRedditorComments(c.Chain.Name, sort, tdur, limit)
+		return c.getRedditorComments(name, sort, tdur, limit)
 	default:
-		return nil, fmt.Errorf("'%s' type does not have an option for comments", c.Chain.Type)
+		return nil, fmt.Errorf("'%s' type does not have an option for comments", ttype)
 	}
 }
 
 func (c *Reddit) Info() (MiraInterface, error) {
-	switch c.Chain.Type {
+	name, ttype := c.getQueue()
+	switch ttype {
 	case "me":
 		return c.getMe()
 	case "submission":
-		return c.getSubmission(c.Chain.Name)
+		return c.getSubmission(name)
 	case "comment":
-		return c.getComment(c.Chain.Name)
+		return c.getComment(name)
 	case "subreddit":
-		return c.getSubreddit(c.Chain.Name)
+		return c.getSubreddit(name)
 	case "redditor":
-		return c.getUser(c.Chain.Name)
+		return c.getUser(name)
 	default:
 		return nil, fmt.Errorf("returning type is not defined")
 	}
@@ -183,11 +182,11 @@ func (c *Reddit) getComment(id string) (*models.Comment, error) {
 // NOTE: If any error occurs, the method will return on error object.
 // If it takes more than 12 calls, the function bails out.
 func (c *Reddit) Root() (string, error) {
-	err := c.checkType("comment")
+	name, _, err := c.checkType("comment")
 	if err != nil {
 		return "", err
 	}
-	current := c.Chain.Name
+	current := name
 	// Not a comment passed
 	if string(current[1]) != "1" {
 		return "", errors.New("the passed ID is not a comment")
@@ -356,13 +355,14 @@ func (c *Reddit) getSubredditPostsAfter(sr string, last string, limit int) ([]mo
 }
 
 func (c *Reddit) CommentsAfter(sort string, last string, limit int) ([]models.Comment, error) {
-	switch c.Chain.Type {
+	name, ttype := c.getQueue()
+	switch ttype {
 	case "subreddit":
-		return c.getSubredditCommentsAfter(c.Chain.Name, sort, last, limit)
+		return c.getSubredditCommentsAfter(name, sort, last, limit)
 	case "redditor":
-		return c.getRedditorCommentsAfter(c.Chain.Name, sort, last, limit)
+		return c.getRedditorCommentsAfter(name, sort, last, limit)
 	default:
-		return nil, fmt.Errorf("'%s' type does not have an option for comments", c.Chain.Type)
+		return nil, fmt.Errorf("'%s' type does not have an option for comments", ttype)
 	}
 }
 
@@ -379,14 +379,14 @@ func (c *Reddit) getSubredditCommentsAfter(sr string, sort string, last string, 
 }
 
 func (c *Reddit) Submit(title string, text string) (*models.Submission, error) {
-	err := c.checkType("subreddit")
+	name, _, err := c.checkType("subreddit")
 	if err != nil {
 		return nil, err
 	}
 	target := RedditOauth + "/api/submit"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"title":    title,
-		"sr":       c.Chain.Name,
+		"sr":       name,
 		"text":     text,
 		"kind":     "self",
 		"resubmit": "true",
@@ -398,7 +398,7 @@ func (c *Reddit) Submit(title string, text string) (*models.Submission, error) {
 }
 
 func (c *Reddit) Reply(text string) (*models.CommentWrap, error) {
-	err := c.checkType("comment")
+	name, _, err := c.checkType("comment")
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +406,7 @@ func (c *Reddit) Reply(text string) (*models.CommentWrap, error) {
 	target := RedditOauth + "/api/comment"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
-		"thing_id": c.Chain.Name,
+		"thing_id": name,
 		"api_type": "json",
 	})
 	ret := &models.CommentWrap{}
@@ -415,14 +415,14 @@ func (c *Reddit) Reply(text string) (*models.CommentWrap, error) {
 }
 
 func (c *Reddit) Save(text string) (*models.CommentWrap, error) {
-	err := c.checkType("submission")
+	name, _, err := c.checkType("submission")
 	if err != nil {
 		return nil, err
 	}
 	target := RedditOauth + "/api/comment"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
-		"thing_id": c.Chain.Name,
+		"thing_id": name,
 		"api_type": "json",
 	})
 	ret := &models.CommentWrap{}
@@ -431,39 +431,39 @@ func (c *Reddit) Save(text string) (*models.CommentWrap, error) {
 }
 
 func (c *Reddit) Delete() error {
-	err := c.checkType("comment", "submission")
+	name, _, err := c.checkType("comment", "submission")
 	if err != nil {
 		return err
 	}
 	target := RedditOauth + "/api/del"
 	_, err = c.MiraRequest("POST", target, map[string]string{
-		"id":       c.Chain.Name,
+		"id":       name,
 		"api_type": "json",
 	})
 	return err
 }
 
 func (c *Reddit) Approve() error {
-	err := c.checkType("comment")
+	name, _, err := c.checkType("comment")
 	if err != nil {
 		return err
 	}
 	target := RedditOauth + "/api/approve"
 	_, err = c.MiraRequest("POST", target, map[string]string{
-		"id":       c.Chain.Name,
+		"id":       name,
 		"api_type": "json",
 	})
 	return err
 }
 
 func (c *Reddit) Distinguish(how string, sticky bool) error {
-	err := c.checkType("comment")
+	name, _, err := c.checkType("comment")
 	if err != nil {
 		return err
 	}
 	target := RedditOauth + "/api/distinguish"
 	_, err = c.MiraRequest("POST", target, map[string]string{
-		"id":       c.Chain.Name,
+		"id":       name,
 		"how":      how,
 		"sticky":   strconv.FormatBool(sticky),
 		"api_type": "json",
@@ -472,14 +472,14 @@ func (c *Reddit) Distinguish(how string, sticky bool) error {
 }
 
 func (c *Reddit) Edit(text string) (*models.CommentWrap, error) {
-	err := c.checkType("comment", "submission")
+	name, _, err := c.checkType("comment", "submission")
 	if err != nil {
 		return nil, err
 	}
 	target := RedditOauth + "/api/editusertext"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
-		"thing_id": c.Chain.Name,
+		"thing_id": name,
 		"api_type": "json",
 	})
 	ret := &models.CommentWrap{}
@@ -488,7 +488,7 @@ func (c *Reddit) Edit(text string) (*models.CommentWrap, error) {
 }
 
 func (c *Reddit) Compose(subject, text string) error {
-	err := c.checkType("redditor")
+	name, _, err := c.checkType("redditor")
 	if err != nil {
 		return err
 	}
@@ -496,14 +496,14 @@ func (c *Reddit) Compose(subject, text string) error {
 	_, err = c.MiraRequest("POST", target, map[string]string{
 		"subject":  subject,
 		"text":     text,
-		"to":       c.Chain.Name,
+		"to":       name,
 		"api_type": "json",
 	})
 	return err
 }
 
 func (c *Reddit) ReadMessage(message_id string) error {
-	err := c.checkType("me")
+	_, _, err := c.checkType("me")
 	if err != nil {
 		return err
 	}
@@ -515,7 +515,7 @@ func (c *Reddit) ReadMessage(message_id string) error {
 }
 
 func (c *Reddit) ReadAllMessages() error {
-	err := c.checkType("me")
+	_, _, err := c.checkType("me")
 	if err != nil {
 		return err
 	}
@@ -525,7 +525,7 @@ func (c *Reddit) ReadAllMessages() error {
 }
 
 func (c *Reddit) ListUnreadMessages() ([]models.Comment, error) {
-	err := c.checkType("me")
+	_, _, err := c.checkType("me")
 	if err != nil {
 		return nil, err
 	}
@@ -539,16 +539,16 @@ func (c *Reddit) ListUnreadMessages() ([]models.Comment, error) {
 }
 
 func (c *Reddit) SubredditUpdateSidebar(text string) error {
-	err := c.checkType("subreddit")
+	name, _, err := c.checkType("subreddit")
 	if err != nil {
 		return err
 	}
 	target := RedditOauth + "/api/site_admin"
 	_, err = c.MiraRequest("POST", target, map[string]string{
-		"sr":          c.Chain.Name,
+		"sr":          name,
 		"name":        "None",
 		"description": text,
-		"title":       c.Chain.Name,
+		"title":       name,
 		"wikimode":    "anyone",
 		"link_type":   "any",
 		"type":        "public",
@@ -557,14 +557,31 @@ func (c *Reddit) SubredditUpdateSidebar(text string) error {
 	return err
 }
 
-func (c *Reddit) checkType(rtype ...string) error {
-	if c.Chain.Name == "" {
-		return fmt.Errorf("identifier is empty")
+func (c *Reddit) checkType(rtype ...string) (string, string, error) {
+	name, ttype := c.getQueue()
+	if name == "" {
+		return "", "", fmt.Errorf("identifier is empty")
 	}
-	if !findElem(c.Chain.Type, rtype) {
-		return fmt.Errorf("the passed type is not a valid type for this call | expected: %s", strings.Join(rtype, ", "))
+	if !findElem(ttype, rtype) {
+		return "", "", fmt.Errorf("the passed type is not a valid type for this call | expected: %s", strings.Join(rtype, ", "))
 	}
-	return nil
+	return name, ttype, nil
+}
+
+func (c *Reddit) addQueue(name string, ttype string) {
+	c.Chain.Name = append(c.Chain.Name, name)
+	c.Chain.Type = append(c.Chain.Type, ttype)
+}
+
+func (c *Reddit) getQueue() (string, string) {
+	if len(c.Chain.Name) < 1 || len(c.Chain.Type) < 1 {
+		return "", ""
+	}
+	name := c.Chain.Name[0]
+	c.Chain.Name = c.Chain.Name[1:]
+	type_t := c.Chain.Type[0]
+	c.Chain.Type = c.Chain.Type[1:]
+	return name, type_t
 }
 
 func findElem(elem string, arr []string) bool {

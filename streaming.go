@@ -21,7 +21,7 @@ func (r *Reddit) StreamCommentReplies() (<-chan *models.Comment, chan bool) {
 				if v.IsCommentReply() {
 					c <- &v
 					// You can read the message with
-					r.ReadMessage(v.GetId())
+					r.Me().ReadMessage(v.GetId())
 				}
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
@@ -48,7 +48,7 @@ func (r *Reddit) StreamMentions() (<-chan *models.Comment, chan bool) {
 				if v.IsMention() {
 					c <- &v
 					// You can read the message with
-					r.ReadMessage(v.GetId())
+					r.Me().ReadMessage(v.GetId())
 				}
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
@@ -63,28 +63,27 @@ func (r *Reddit) StreamMentions() (<-chan *models.Comment, chan bool) {
 // // c is the channel with all comments
 // // stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamComments() (<-chan *models.Comment, chan bool, error) {
-	err := r.checkType("subreddit", "redditor")
+	name, ttype, err := r.checkType("subreddit", "redditor")
 	if err != nil {
 		return nil, nil, err
 	}
-	switch r.Chain.Type {
+	switch ttype {
 	case "subreddit":
-		return r.streamSubredditComments()
+		return r.streamSubredditComments(name)
 	case "redditor":
-		return r.streamRedditorComments()
+		return r.streamRedditorComments(name)
 	}
 	return nil, nil, nil
 }
 
-func (r *Reddit) streamSubredditComments() (<-chan *models.Comment, chan bool, error) {
+func (r *Reddit) streamSubredditComments(subreddit string) (<-chan *models.Comment, chan bool, error) {
 	c := make(chan *models.Comment, 25)
 	stop := make(chan bool, 1)
-	anchor, err := r.Subreddit(r.Chain.Name).Comments("new", "hour", 1)
+	anchor, err := r.Subreddit(subreddit).Comments("new", "hour", 1)
 	if err != nil {
 		return nil, nil, err
 	}
 	last := ""
-	subreddit := r.Chain.Name
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
 	}
@@ -107,15 +106,14 @@ func (r *Reddit) streamSubredditComments() (<-chan *models.Comment, chan bool, e
 	return c, stop, nil
 }
 
-func (r *Reddit) streamRedditorComments() (<-chan *models.Comment, chan bool, error) {
+func (r *Reddit) streamRedditorComments(redditor string) (<-chan *models.Comment, chan bool, error) {
 	c := make(chan *models.Comment, 25)
 	stop := make(chan bool, 1)
-	anchor, err := r.Redditor(r.Chain.Name).Comments("new", "hour", 1)
+	anchor, err := r.Redditor(redditor).Comments("new", "hour", 1)
 	if err != nil {
 		return nil, nil, err
 	}
 	last := ""
-	redditor := r.Chain.Name
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
 	}
@@ -139,28 +137,27 @@ func (r *Reddit) streamRedditorComments() (<-chan *models.Comment, chan bool, er
 }
 
 func (r *Reddit) StreamSubmissions() (<-chan *models.PostListingChild, chan bool, error) {
-	err := r.checkType("subreddit", "redditor")
+	name, ttype, err := r.checkType("subreddit", "redditor")
 	if err != nil {
 		return nil, nil, err
 	}
-	switch r.Chain.Type {
+	switch ttype {
 	case "subreddit":
-		return r.streamSubredditSubmissions()
+		return r.streamSubredditSubmissions(name)
 	case "redditor":
-		return r.streamRedditorSubmissions()
+		return r.streamRedditorSubmissions(name)
 	}
 	return nil, nil, nil
 }
 
-func (r *Reddit) streamSubredditSubmissions() (<-chan *models.PostListingChild, chan bool, error) {
+func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan *models.PostListingChild, chan bool, error) {
 	c := make(chan *models.PostListingChild, 25)
 	stop := make(chan bool, 1)
-	anchor, err := r.Subreddit(r.Chain.Name).Submissions("new", "hour", 1)
+	anchor, err := r.Subreddit(subreddit).Submissions("new", "hour", 1)
 	if err != nil {
 		return nil, nil, err
 	}
 	last := ""
-	subreddit := r.Chain.Name
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
 	}
@@ -183,15 +180,14 @@ func (r *Reddit) streamSubredditSubmissions() (<-chan *models.PostListingChild, 
 	return c, stop, nil
 }
 
-func (r *Reddit) streamRedditorSubmissions() (<-chan *models.PostListingChild, chan bool, error) {
+func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan *models.PostListingChild, chan bool, error) {
 	c := make(chan *models.PostListingChild, 25)
 	stop := make(chan bool, 1)
-	anchor, err := r.Redditor(r.Chain.Name).Submissions("new", "hour", 1)
+	anchor, err := r.Redditor(redditor).Submissions("new", "hour", 1)
 	if err != nil {
 		return nil, nil, err
 	}
 	last := ""
-	redditor := r.Chain.Name
 	if len(anchor) > 0 {
 		last = anchor[0].GetId()
 	}
