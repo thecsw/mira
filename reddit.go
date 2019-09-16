@@ -41,23 +41,28 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 }
 
 func (c *Reddit) Me() *Reddit {
-	return c.addQueue(c.Creds.Username, "me")
+	c.addQueue(c.Creds.Username, "me")
+	return c
 }
 
 func (c *Reddit) Subreddit(name ...string) *Reddit {
-	return c.addQueue(strings.Join(name, "+"), "subreddit")
+	c.addQueue(strings.Join(name, "+"), "subreddit")
+	return c
 }
 
 func (c *Reddit) Submission(name string) *Reddit {
-	return c.addQueue(name, "submission")
+	c.addQueue(name, "submission")
+	return c
 }
 
 func (c *Reddit) Comment(name string) *Reddit {
-	return c.addQueue(name, "comment")
+	c.addQueue(name, "comment")
+	return c
 }
 
 func (c *Reddit) Redditor(name string) *Reddit {
-	return c.addQueue(name, "redditor")
+	c.addQueue(name, "redditor")
+	return c
 }
 
 func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]models.PostListingChild, error) {
@@ -563,9 +568,8 @@ func (c *Reddit) checkType(rtype ...string) (string, string, error) {
 	return name, ttype, nil
 }
 
-func (c *Reddit) addQueue(name string, ttype string) *Reddit {
+func (c *Reddit) addQueue(name string, ttype string) {
 	c.Chain = append(c.Chain, ChainVals{Name: name, Type: ttype})
-	return c
 }
 
 func (c *Reddit) getQueue() (string, string) {
