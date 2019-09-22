@@ -6,8 +6,8 @@ import (
 	"github.com/thecsw/mira/models"
 )
 
-// // c is the channel with all unread messages
-// // stop is the channel to stop the stream. Do stop <- true to stop the loop
+// c is the channel with all unread messages
+// stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamCommentReplies() (<-chan *models.Comment, chan bool) {
 	c := make(chan *models.Comment, 25)
 	stop := make(chan bool, 1)
@@ -15,14 +15,13 @@ func (r *Reddit) StreamCommentReplies() (<-chan *models.Comment, chan bool) {
 		for {
 			stop <- false
 			un, _ := r.Me().ListUnreadMessages()
+			un = onlyReplies(un)
 			for _, v := range un {
 				// Only process comment replies and
 				// mark them as read.
-				if v.IsCommentReply() {
-					c <- &v
-					// You can read the message with
-					r.Me().ReadMessage(v.GetId())
-				}
+				c <- &v
+				// You can read the message with
+				r.Me().ReadMessage(v.GetId())
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
 			if <-stop {
@@ -33,8 +32,8 @@ func (r *Reddit) StreamCommentReplies() (<-chan *models.Comment, chan bool) {
 	return c, stop
 }
 
-// // c is the channel with all unread messages
-// // stop is the channel to stop the stream. Do stop <- true to stop the loop
+// c is the channel with all unread messages
+// stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamMentions() (<-chan *models.Comment, chan bool) {
 	c := make(chan *models.Comment, 25)
 	stop := make(chan bool, 1)
@@ -42,14 +41,13 @@ func (r *Reddit) StreamMentions() (<-chan *models.Comment, chan bool) {
 		for {
 			stop <- false
 			un, _ := r.Me().ListUnreadMessages()
+			un = onlyMentions(un)
 			for _, v := range un {
 				// Only process comment replies and
 				// mark them as read.
-				if v.IsMention() {
-					c <- &v
-					// You can read the message with
-					r.Me().ReadMessage(v.GetId())
-				}
+				c <- &v
+				// You can read the message with
+				r.Me().ReadMessage(v.GetId())
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
 			if <-stop {
@@ -60,8 +58,8 @@ func (r *Reddit) StreamMentions() (<-chan *models.Comment, chan bool) {
 	return c, stop
 }
 
-// // c is the channel with all comments
-// // stop is the channel to stop the stream. Do stop <- true to stop the loop
+// c is the channel with all comments
+// stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamComments() (<-chan *models.Comment, chan bool, error) {
 	name, ttype, err := r.checkType("subreddit", "redditor")
 	if err != nil {
@@ -208,4 +206,24 @@ func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan *models.Post
 		}
 	}()
 	return c, stop, nil
+}
+
+func onlyMentions(comments []models.Comment) []models.Comment {
+	newComments := make([]models.Comment, 0, 8)
+	for _, v := range comments {
+		if v.IsMention() {
+			newComments = append(newComments, v)
+		}
+	}
+	return newComments
+}
+
+func onlyReplies(comments []models.Comment) []models.Comment {
+	newComments := make([]models.Comment, 0, 8)
+	for _, v := range comments {
+		if v.IsCommentReply() {
+			newComments = append(newComments, v)
+		}
+	}
+	return newComments
 }
