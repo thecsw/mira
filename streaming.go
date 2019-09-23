@@ -8,20 +8,21 @@ import (
 
 // c is the channel with all unread messages
 // stop is the channel to stop the stream. Do stop <- true to stop the loop
-func (r *Reddit) StreamCommentReplies() (<-chan *models.Comment, chan bool) {
-	c := make(chan *models.Comment, 25)
+func (r *Reddit) StreamCommentReplies() (<-chan models.Comment, chan bool) {
+	c := make(chan models.Comment, 25)
 	stop := make(chan bool, 1)
 	go func() {
 		for {
 			stop <- false
 			un, _ := r.Me().ListUnreadMessages()
-			un = onlyReplies(un)
 			for _, v := range un {
-				// Only process comment replies and
-				// mark them as read.
-				c <- &v
-				// You can read the message with
-				r.Me().ReadMessage(v.GetId())
+				if v.IsCommentReply() {
+					// Only process comment replies and
+					// mark them as read.
+					c <- v
+					// You can read the message with
+					r.Me().ReadMessage(v.GetId())
+				}
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
 			if <-stop {
@@ -34,20 +35,21 @@ func (r *Reddit) StreamCommentReplies() (<-chan *models.Comment, chan bool) {
 
 // c is the channel with all unread messages
 // stop is the channel to stop the stream. Do stop <- true to stop the loop
-func (r *Reddit) StreamMentions() (<-chan *models.Comment, chan bool) {
-	c := make(chan *models.Comment, 25)
+func (r *Reddit) StreamMentions() (<-chan models.Comment, chan bool) {
+	c := make(chan models.Comment, 25)
 	stop := make(chan bool, 1)
 	go func() {
 		for {
 			stop <- false
 			un, _ := r.Me().ListUnreadMessages()
-			un = onlyMentions(un)
 			for _, v := range un {
-				// Only process comment replies and
-				// mark them as read.
-				c <- &v
-				// You can read the message with
-				r.Me().ReadMessage(v.GetId())
+				if v.IsMention() {
+					// Only process comment replies and
+					// mark them as read.
+					c <- v
+					// You can read the message with
+					r.Me().ReadMessage(v.GetId())
+				}
 			}
 			time.Sleep(r.Stream.CommentListInterval * time.Second)
 			if <-stop {
@@ -60,7 +62,7 @@ func (r *Reddit) StreamMentions() (<-chan *models.Comment, chan bool) {
 
 // c is the channel with all comments
 // stop is the channel to stop the stream. Do stop <- true to stop the loop
-func (r *Reddit) StreamComments() (<-chan *models.Comment, chan bool, error) {
+func (r *Reddit) StreamComments() (<-chan models.Comment, chan bool, error) {
 	name, ttype, err := r.checkType("subreddit", "redditor")
 	if err != nil {
 		return nil, nil, err
@@ -74,8 +76,8 @@ func (r *Reddit) StreamComments() (<-chan *models.Comment, chan bool, error) {
 	return nil, nil, nil
 }
 
-func (r *Reddit) streamSubredditComments(subreddit string) (<-chan *models.Comment, chan bool, error) {
-	c := make(chan *models.Comment, 25)
+func (r *Reddit) streamSubredditComments(subreddit string) (<-chan models.Comment, chan bool, error) {
+	c := make(chan models.Comment, 25)
 	stop := make(chan bool, 1)
 	anchor, err := r.Subreddit(subreddit).Comments("new", "hour", 1)
 	if err != nil {
@@ -90,7 +92,7 @@ func (r *Reddit) streamSubredditComments(subreddit string) (<-chan *models.Comme
 			stop <- false
 			un, _ := r.Subreddit(subreddit).CommentsAfter("new", last, 25)
 			for _, v := range un {
-				c <- &v
+				c <- v
 			}
 			if len(un) > 0 {
 				last = un[0].GetId()
@@ -104,8 +106,8 @@ func (r *Reddit) streamSubredditComments(subreddit string) (<-chan *models.Comme
 	return c, stop, nil
 }
 
-func (r *Reddit) streamRedditorComments(redditor string) (<-chan *models.Comment, chan bool, error) {
-	c := make(chan *models.Comment, 25)
+func (r *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment, chan bool, error) {
+	c := make(chan models.Comment, 25)
 	stop := make(chan bool, 1)
 	anchor, err := r.Redditor(redditor).Comments("new", "hour", 1)
 	if err != nil {
@@ -120,7 +122,7 @@ func (r *Reddit) streamRedditorComments(redditor string) (<-chan *models.Comment
 			stop <- false
 			un, _ := r.Redditor(redditor).CommentsAfter("new", last, 25)
 			for _, v := range un {
-				c <- &v
+				c <- v
 			}
 			if len(un) > 0 {
 				last = un[0].GetId()
@@ -134,7 +136,7 @@ func (r *Reddit) streamRedditorComments(redditor string) (<-chan *models.Comment
 	return c, stop, nil
 }
 
-func (r *Reddit) StreamSubmissions() (<-chan *models.PostListingChild, chan bool, error) {
+func (r *Reddit) StreamSubmissions() (<-chan models.PostListingChild, chan bool, error) {
 	name, ttype, err := r.checkType("subreddit", "redditor")
 	if err != nil {
 		return nil, nil, err
@@ -148,8 +150,8 @@ func (r *Reddit) StreamSubmissions() (<-chan *models.PostListingChild, chan bool
 	return nil, nil, nil
 }
 
-func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan *models.PostListingChild, chan bool, error) {
-	c := make(chan *models.PostListingChild, 25)
+func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.PostListingChild, chan bool, error) {
+	c := make(chan models.PostListingChild, 25)
 	stop := make(chan bool, 1)
 	anchor, err := r.Subreddit(subreddit).Submissions("new", "hour", 1)
 	if err != nil {
@@ -167,7 +169,7 @@ func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan *models.Po
 				last = new[0].GetId()
 			}
 			for i := range new {
-				c <- &new[len(new)-i-1]
+				c <- new[len(new)-i-1]
 			}
 			time.Sleep(r.Stream.PostListInterval * time.Second)
 			if <-stop {
@@ -178,8 +180,8 @@ func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan *models.Po
 	return c, stop, nil
 }
 
-func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan *models.PostListingChild, chan bool, error) {
-	c := make(chan *models.PostListingChild, 25)
+func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan models.PostListingChild, chan bool, error) {
+	c := make(chan models.PostListingChild, 25)
 	stop := make(chan bool, 1)
 	anchor, err := r.Redditor(redditor).Submissions("new", "hour", 1)
 	if err != nil {
@@ -197,7 +199,7 @@ func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan *models.Post
 				last = new[0].GetId()
 			}
 			for i := range new {
-				c <- &new[len(new)-i-1]
+				c <- new[len(new)-i-1]
 			}
 			time.Sleep(r.Stream.PostListInterval * time.Second)
 			if <-stop {
@@ -206,24 +208,4 @@ func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan *models.Post
 		}
 	}()
 	return c, stop, nil
-}
-
-func onlyMentions(comments []models.Comment) []models.Comment {
-	newComments := make([]models.Comment, 0, 8)
-	for _, v := range comments {
-		if v.IsMention() {
-			newComments = append(newComments, v)
-		}
-	}
-	return newComments
-}
-
-func onlyReplies(comments []models.Comment) []models.Comment {
-	newComments := make([]models.Comment, 0, 8)
-	for _, v := range comments {
-		if v.IsCommentReply() {
-			newComments = append(newComments, v)
-		}
-	}
-	return newComments
 }

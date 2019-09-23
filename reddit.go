@@ -125,35 +125,35 @@ func (c *Reddit) Info() (MiraInterface, error) {
 	}
 }
 
-func (c *Reddit) getMe() (*models.Me, error) {
+func (c *Reddit) getMe() (models.Me, error) {
 	target := RedditOauth + "/api/v1/me"
+	ret := &models.Me{}
 	ans, err := c.MiraRequest("GET", target, nil)
 	if err != nil {
-		return nil, err
+		return *ret, err
 	}
-	ret := &models.Me{}
 	json.Unmarshal(ans, ret)
-	return ret, nil
+	return *ret, nil
 }
 
-func (c *Reddit) getSubmission(id string) (*models.PostListingChild, error) {
+func (c *Reddit) getSubmission(id string) (models.PostListingChild, error) {
 	target := RedditOauth + "/api/info.json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"id": id,
 	})
 	ret := &models.PostListing{}
 	json.Unmarshal(ans, ret)
-	return &ret.GetChildren()[0], err
+	return ret.GetChildren()[0], err
 }
 
-func (c *Reddit) getComment(id string) (*models.Comment, error) {
+func (c *Reddit) getComment(id string) (models.Comment, error) {
 	target := RedditOauth + "/api/info.json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"id": id,
 	})
 	ret := models.CommentListing{}
 	json.Unmarshal(ans, ret)
-	return &ret.GetChildren()[0], err
+	return ret.GetChildren()[0], err
 }
 
 // This function will return the submission id of a comment
@@ -214,20 +214,20 @@ func (c *Reddit) Root() (string, error) {
 	return current, nil
 }
 
-func (c *Reddit) getUser(name string) (*models.Redditor, error) {
+func (c *Reddit) getUser(name string) (models.Redditor, error) {
 	target := RedditOauth + "/user/" + name + "/about"
 	ans, err := c.MiraRequest("GET", target, nil)
 	ret := &models.Redditor{}
 	json.Unmarshal(ans, ret)
-	return ret, err
+	return *ret, err
 }
 
-func (c *Reddit) getSubreddit(name string) (*models.Subreddit, error) {
+func (c *Reddit) getSubreddit(name string) (models.Subreddit, error) {
 	target := RedditOauth + "/r/" + name + "/about"
 	ans, err := c.MiraRequest("GET", target, nil)
 	ret := &models.Subreddit{}
 	json.Unmarshal(ans, ret)
-	return ret, err
+	return *ret, err
 }
 
 func (c *Reddit) getRedditorPosts(user string, sort string, tdur string, limit int) ([]models.PostListingChild, error) {
@@ -378,10 +378,11 @@ func (c *Reddit) getSubredditCommentsAfter(sr string, sort string, last string, 
 	return ret.GetChildren(), err
 }
 
-func (c *Reddit) Submit(title string, text string) (*models.Submission, error) {
+func (c *Reddit) Submit(title string, text string) (models.Submission, error) {
+	ret := &models.Submission{}
 	name, _, err := c.checkType("subreddit")
 	if err != nil {
-		return nil, err
+		return *ret, err
 	}
 	target := RedditOauth + "/api/submit"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
@@ -392,32 +393,31 @@ func (c *Reddit) Submit(title string, text string) (*models.Submission, error) {
 		"resubmit": "true",
 		"api_type": "json",
 	})
-	ret := &models.Submission{}
 	json.Unmarshal(ans, ret)
-	return ret, err
+	return *ret, err
 }
 
-func (c *Reddit) Reply(text string) (*models.CommentWrap, error) {
+func (c *Reddit) Reply(text string) (models.CommentWrap, error) {
+	ret := &models.CommentWrap{}
 	name, _, err := c.checkType("comment")
 	if err != nil {
-		return nil, err
+		return *ret, err
 	}
-
 	target := RedditOauth + "/api/comment"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
 		"thing_id": name,
 		"api_type": "json",
 	})
-	ret := &models.CommentWrap{}
 	json.Unmarshal(ans, ret)
-	return ret, err
+	return *ret, err
 }
 
-func (c *Reddit) Save(text string) (*models.CommentWrap, error) {
+func (c *Reddit) Save(text string) (models.CommentWrap, error) {
+	ret := &models.CommentWrap{}
 	name, _, err := c.checkType("submission")
 	if err != nil {
-		return nil, err
+		return *ret, err
 	}
 	target := RedditOauth + "/api/comment"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
@@ -425,9 +425,8 @@ func (c *Reddit) Save(text string) (*models.CommentWrap, error) {
 		"thing_id": name,
 		"api_type": "json",
 	})
-	ret := &models.CommentWrap{}
 	json.Unmarshal(ans, ret)
-	return ret, err
+	return *ret, err
 }
 
 func (c *Reddit) Delete() error {
@@ -471,10 +470,11 @@ func (c *Reddit) Distinguish(how string, sticky bool) error {
 	return err
 }
 
-func (c *Reddit) Edit(text string) (*models.CommentWrap, error) {
+func (c *Reddit) Edit(text string) (models.CommentWrap, error) {
+	ret := &models.CommentWrap{}
 	name, _, err := c.checkType("comment", "submission")
 	if err != nil {
-		return nil, err
+		return *ret, err
 	}
 	target := RedditOauth + "/api/editusertext"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
@@ -482,9 +482,8 @@ func (c *Reddit) Edit(text string) (*models.CommentWrap, error) {
 		"thing_id": name,
 		"api_type": "json",
 	})
-	ret := &models.CommentWrap{}
 	json.Unmarshal(ans, ret)
-	return ret, err
+	return *ret, err
 }
 
 func (c *Reddit) Compose(subject, text string) error {
