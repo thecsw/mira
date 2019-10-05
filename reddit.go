@@ -143,6 +143,9 @@ func (c *Reddit) getSubmission(id string) (models.PostListingChild, error) {
 	})
 	ret := &models.PostListing{}
 	json.Unmarshal(ans, ret)
+	if len(ret.GetChildren()) < 1 {
+		return models.PostListingChild{}, fmt.Errorf("id not found")
+	}
 	return ret.GetChildren()[0], err
 }
 
@@ -153,6 +156,9 @@ func (c *Reddit) getComment(id string) (models.Comment, error) {
 	})
 	ret := models.CommentListing{}
 	json.Unmarshal(ans, ret)
+	if len(ret.GetChildren()) < 1 {
+		return models.Comment{}, fmt.Errorf("id not found")
+	}
 	return ret.GetChildren()[0], err
 }
 
