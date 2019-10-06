@@ -154,7 +154,7 @@ func (c *Reddit) getComment(id string) (models.Comment, error) {
 	ans, err := c.MiraRequest("GET", target, map[string]string{
 		"id": id,
 	})
-	ret := models.CommentListing{}
+	ret := &models.CommentListing{}
 	json.Unmarshal(ans, ret)
 	if len(ret.GetChildren()) < 1 {
 		return models.Comment{}, fmt.Errorf("id not found")
