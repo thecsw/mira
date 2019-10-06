@@ -48,52 +48,84 @@ PASSWORD =
 USER_AGENT =
 ```
 
+## Environment setup
+
+Mira also works with environmental variables, here is an example from docker-compose
+
+```
+    environment:
+      - BOT_CLIENT_ID=hunteoahtnhnt432
+      - BOT_CLIENT_SECRET=ehoantehont4ht34hnt332
+      - BOT_USER_AGENT='u/mytestbot developed by thecsw'
+      - BOT_USERNAME=mytestbot
+      - BOT_PASSWORD=verygoodpassword
+```
+
+And the login will look like this:
+
+``` go
+r, err := mira.Init(mira.ReadCredsFromEnv())
+```
+
+Or you can always just fill in the values directly.
+
 ## Examples
 
 Note: Error checking is omitted for brevity.
 
-### Streaming comment replies
+### Streaming
 
-Below is an example on how to make a simple bot that 
-listens to a stream of comment replies and replies.
+Streaming new submissions is very simple! *mira* supports streaming comment replies, 
+mentions, new subreddit's/redditor's comments, and new subreddit's/redditor's submissions.
 
 ``` go
-package main
+// r is an instance of *mira.Reddit
 
-import (
-	"github.com/thecsw/mira"
-)
-
-func main() {
-	// Good practice is to check if the login errors out or not
-	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
-	c, _ := r.StreamCommentReplies()
-	for {
-		msg := <-c
-		r.Comment(msg.GetId()).Reply("I got your message!")
-	}
+// Start streaming my comment replies
+c, _ := r.StreamCommentReplies()
+for {
+	msg := <-c
+	r.Comment(msg.GetId()).Reply("I got your message!")
 }
-```
 
-### Streaming new submissions
+// Start streaming my mentions
+// Start streaming my comment replies
+c, _ := r.StreamMentions()
+for {
+	msg := <-c
+	r.Comment(msg.GetId()).Reply("I got your mention of me!")
+}
 
-Streaming new submissions is very simple too. You can do it the same way
-as streaming comment replies.
+// Start streaming subreddits' submissions
+c, _, _ := r.Subreddit("tifu", "wholesomememes").StreamSubmissions()
+for {
+	post := <-c
+	r.Submission(post.GetId()).Save("hello there")
+}
 
-``` go
-package main
+// NOTE: Second value is the stop channel. Send a true value
+// to the stop channel and the goroutine will return. 
+// Basically, `stop <- true`
 
-import (
-	"github.com/thecsw/mira"
-)
+// Start streaming subreddits' comments
+c, _, _ := r.Subreddit("all").StreamComments()
+for {
+	msg := <-c
+	r.Comment(msg.GetId()).Reply("my reply!")
+}
 
-func main() {
-	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
-	c, _, _ := r.Subreddit("all").StreamSubmissions()
-	for {
-		post := <-c
-		r.Submission(post.GetId()).Save("hello there")
-	}
+// Start streaming redditor's submissions
+c, _, _ := r.Redditor("thecsw").StreamSubmissions()
+for {
+	post := <-c
+	r.Submission(post.GetId()).Save("hello there")
+}
+	
+// Start streaming redditor' comments
+c, _, _ := r.Redditor("thecsw").StreamComments()
+for {
+	msg := <-c
+	r.Comment(msg.GetId()).Reply("my reply!")
 }
 ```
 
@@ -176,5 +208,83 @@ func main() {
 	for _, v := range subs {
 		fmt.Println("Submission Title: ", v.GetTitle())
 	}
+}
+```
+
+### Getting reddit info
+
+You can extract info from any reddit ID using mira. The returned value is an 
+instance of mira.MiraInterface.
+
+``` go
+package main
+
+import (
+	"fmt"
+
+	"github.com/thecsw/mira"
+)
+
+func main() {
+	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	me, _ := r.Me().Info()
+	comment, _ := r.Comment("t1_...").Info()
+	redditor, _ := r.Redditor.Info("t2_...")
+	submission, _ := r.Submission("t3_...").Info()
+	subreddit, _ := r.Subreddit("t5_...").Info()
+}
+```
+
+Here is the interface:
+
+``` go
+type MiraInterface interface {
+	GetId() string
+	GetParentId() string
+	GetTitle() string
+	GetBody() string
+	GetAuthor() string
+	GetName() string
+	GetKarma() float64
+	GetUps() float64
+	GetDowns() float64
+	GetSubreddit() string
+	GetCreated() float64
+	GetFlair() string
+	GetUrl() string
+	IsRoot() bool
+}
+```
+
+## Mira Caller
+
+Surely, Reddit API is always developing and I can't implement all endpoints. It will be a bit of a bloat.
+Instead, you have accessto *Reddit.MiraRequest method that will let you to do any custom reddit api calls!
+
+Here is the signature:
+
+``` go
+func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {...}
+```
+
+It is pretty straight-forward. The return is a slice of bytes. Parse it yourself.
+
+Here is an example of how Reddit.Reply() uses MiraRequest:
+
+``` go
+func (c *Reddit) Reply(text string) (models.CommentWrap, error) {
+	ret := &models.CommentWrap{}
+	name, _, err := c.checkType("comment")
+	if err != nil {
+		return *ret, err
+	}
+	target := RedditOauth + "/api/comment"
+	ans, err := c.MiraRequest("POST", target, map[string]string{
+		"text":     text,
+		"thing_id": name,
+		"api_type": "json",
+	})
+	json.Unmarshal(ans, ret)
+	return *ret, err
 }
 ```
