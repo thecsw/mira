@@ -18,4 +18,4 @@ jobs:
     - name: Get dependencies
       run: go get -u .
     - name: Build
-      run: go test -v -bench -count=1 .
+      run: go test -v -bench -count=1 ./models
