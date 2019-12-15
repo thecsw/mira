@@ -19,6 +19,10 @@ endpoints to cover. We have the basic functionality implemented, like streaming 
 replies, new submissions. Comment, post, edit, reply, and delete options for our
 instances.
 
+## Demo
+
+![Demo](./examples/demo/demo.svg)
+
 Two quick notes: all actions should be done via `Reddit` struct, I thought it would make it
 simpler to work with. Secondly, all actions require the objects full `thing_id`, so you have
 to use `GetId()` to get that id. Every struct has that method implemented and it will return
