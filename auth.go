@@ -90,7 +90,7 @@ func (c *Reddit) SetDefault() {
 		PostListSlice:       25,
 	}
 	c.Values = RedditVals{
-		GetSubmissionFromCommentTries: 12,
+		GetSubmissionFromCommentTries: 32,
 	}
 }
 
