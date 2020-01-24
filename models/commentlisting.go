@@ -16,5 +16,5 @@ func (ldc Comment) IsCommentReply() bool         { return ldc.Data.Subject == "c
 func (ldc Comment) IsMention() bool              { return ldc.Data.Subject == "username mention" }
 func (ldc Comment) GetName() string              { return ldc.Data.Name }
 func (ldc Comment) GetKarma() float64            { return ldc.Data.Score }
-func (ldc Comment) GetUrl() string               { return ldc.Data.LinkTitle }
+func (ldc Comment) GetUrl() string               { return ldc.Data.Permalink }
 func (ldc Comment) GetFlair() string             { return ldc.Data.Context }

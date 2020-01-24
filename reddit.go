@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -160,6 +161,24 @@ func (c *Reddit) getComment(id string) (models.Comment, error) {
 		return models.Comment{}, fmt.Errorf("id not found")
 	}
 	return ret.GetChildren()[0], err
+}
+
+func (c *Reddit) ExtractSubmission() (string, error) {
+	name, _, err := c.checkType("comment")
+	if err != nil {
+		return "", err
+	}
+	info, err := c.Comment(name).Info()
+	if err != nil {
+		return "", err
+	}
+	link := info.GetUrl()
+	reg := regexp.MustCompile(`comments/([^/]+)/`)
+	res := reg.FindStringSubmatch(link)
+	if len(res) < 1 {
+		return "", errors.New("couldn't extract submission id")
+	}
+	return "t3_" + res[1], nil
 }
 
 // This function will return the submission id of a comment
