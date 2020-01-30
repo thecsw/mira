@@ -595,6 +595,20 @@ func (c *Reddit) SubredditUserFlair(user, text string) error {
 	return err
 }
 
+func (c *Reddit) SubredditLinkFlair(postID, text string) error {
+	name, _, err := c.checkType("subreddit")
+	if err != nil {
+		return err
+	}
+	target := RedditOauth + "/r/" + name + "/api/flair"
+	_, err = c.MiraRequest("POST", target, map[string]string{
+		"link":     postID,
+		"text":     text,
+		"api_type": "json",
+	})
+	return err
+}
+
 func (c *Reddit) checkType(rtype ...string) (string, string, error) {
 	name, ttype := c.getQueue()
 	if name == "" {
