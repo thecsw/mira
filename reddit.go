@@ -614,7 +614,7 @@ func (c *Reddit) SelectFlair(text string) error {
 	if err != nil {
 		return err
 	}
-	target := RedditOauth + "/r/" + name + "/api/flair"
+	target := RedditOauth + "/r/" + name + "/api/selectflair"
 	_, err = c.MiraRequest("POST", target, map[string]string{
 		"link":     name,
 		"text":     text,
