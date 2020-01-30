@@ -562,7 +562,7 @@ func (c *Reddit) ListUnreadMessages() ([]models.Comment, error) {
 	return ret.GetChildren(), err
 }
 
-func (c *Reddit) SubredditUpdateSidebar(text string) error {
+func (c *Reddit) UpdateSidebar(text string) error {
 	name, _, err := c.checkType("subreddit")
 	if err != nil {
 		return err
@@ -581,7 +581,7 @@ func (c *Reddit) SubredditUpdateSidebar(text string) error {
 	return err
 }
 
-func (c *Reddit) SubredditUserFlair(user, text string) error {
+func (c *Reddit) UserFlair(user, text string) error {
 	name, _, err := c.checkType("subreddit")
 	if err != nil {
 		return err
@@ -595,14 +595,28 @@ func (c *Reddit) SubredditUserFlair(user, text string) error {
 	return err
 }
 
-func (c *Reddit) SubredditLinkFlair(postID, text string) error {
+func (c *Reddit) LinkFlair(text string) error {
 	name, _, err := c.checkType("submission")
 	if err != nil {
 		return err
 	}
 	target := RedditOauth + "/r/" + name + "/api/flair"
 	_, err = c.MiraRequest("POST", target, map[string]string{
-		"link":     postID,
+		"link":     name,
+		"text":     text,
+		"api_type": "json",
+	})
+	return err
+}
+
+func (c *Reddit) SelectFlair(text string) error {
+	name, _, err := c.checkType("submission")
+	if err != nil {
+		return err
+	}
+	target := RedditOauth + "/r/" + name + "/api/flair"
+	_, err = c.MiraRequest("POST", target, map[string]string{
+		"link":     name,
 		"text":     text,
 		"api_type": "json",
 	})
