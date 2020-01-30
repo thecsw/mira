@@ -596,7 +596,7 @@ func (c *Reddit) SubredditUserFlair(user, text string) error {
 }
 
 func (c *Reddit) SubredditLinkFlair(postID, text string) error {
-	name, _, err := c.checkType("subreddit")
+	name, _, err := c.checkType("submission")
 	if err != nil {
 		return err
 	}
