@@ -21,6 +21,7 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 		values += fmt.Sprintf("%s=%s&", i, v)
 	}
 	values = values[:len(values)-1]
+	fmt.Println(values)
 	r, err := http.NewRequest(method, target+values, nil)
 	if err != nil {
 		return nil, err
@@ -595,26 +596,12 @@ func (c *Reddit) UserFlair(user, text string) error {
 	return err
 }
 
-func (c *Reddit) LinkFlair(text string) error {
-	name, _, err := c.checkType("submission")
-	if err != nil {
-		return err
-	}
-	target := RedditOauth + "/r/" + name + "/api/flair"
-	_, err = c.MiraRequest("POST", target, map[string]string{
-		"link":     name,
-		"text":     text,
-		"api_type": "json",
-	})
-	return err
-}
-
 func (c *Reddit) SelectFlair(text string) error {
 	name, _, err := c.checkType("submission")
 	if err != nil {
 		return err
 	}
-	target := RedditOauth + "/r/" + name + "/api/selectflair"
+	target := RedditOauth + "/api/selectflair"
 	_, err = c.MiraRequest("POST", target, map[string]string{
 		"link":     name,
 		"text":     text,
