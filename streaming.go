@@ -79,7 +79,7 @@ func (r *Reddit) streamSubredditComments(subreddit string) (<-chan models.Commen
 	go func() {
 		for {
 			un, _ := r.Subreddit(subreddit).CommentsAfter("new", last, 100)
-			if len(un) < 0 {
+			if len(un) < 1 {
 				time.Sleep(r.Stream.CommentListInterval * time.Second)
 				continue
 			}
@@ -147,7 +147,7 @@ func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.Pos
 	go func() {
 		for {
 			new, _ := r.Subreddit(subreddit).SubmissionsAfter(last, r.Stream.PostListSlice)
-			if len(new) < 0 {
+			if len(new) < 1 {
 				time.Sleep(r.Stream.PostListInterval * time.Second)
 				continue
 			}
@@ -174,7 +174,7 @@ func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan models.PostL
 	go func() {
 		for {
 			new, _ := r.Redditor(redditor).SubmissionsAfter(last, r.Stream.PostListSlice)
-			if len(new) < 0 {
+			if len(new) < 1 {
 				time.Sleep(r.Stream.PostListInterval * time.Second)
 				continue
 			}
