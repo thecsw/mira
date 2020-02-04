@@ -9,7 +9,7 @@ import (
 // c is the channel with all unread messages
 // stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamCommentReplies() (<-chan models.Comment, chan bool) {
-	c := make(chan models.Comment, 25)
+	c := make(chan models.Comment, 100)
 	stop := make(chan bool, 1)
 	go func() {
 		for {
@@ -36,7 +36,7 @@ func (r *Reddit) StreamCommentReplies() (<-chan models.Comment, chan bool) {
 // c is the channel with all unread messages
 // stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamMentions() (<-chan models.Comment, chan bool) {
-	c := make(chan models.Comment, 25)
+	c := make(chan models.Comment, 100)
 	stop := make(chan bool, 1)
 	go func() {
 		for {
@@ -77,7 +77,7 @@ func (r *Reddit) StreamComments() (<-chan models.Comment, chan bool, error) {
 }
 
 func (r *Reddit) streamSubredditComments(subreddit string) (<-chan models.Comment, chan bool, error) {
-	c := make(chan models.Comment, 25)
+	c := make(chan models.Comment, 100)
 	stop := make(chan bool, 1)
 	anchor, err := r.Subreddit(subreddit).Comments("new", "hour", 1)
 	if err != nil {
@@ -90,7 +90,7 @@ func (r *Reddit) streamSubredditComments(subreddit string) (<-chan models.Commen
 	go func() {
 		for {
 			stop <- false
-			un, _ := r.Subreddit(subreddit).CommentsAfter("new", last, 25)
+			un, _ := r.Subreddit(subreddit).CommentsAfter("new", last, 100)
 			for _, v := range un {
 				c <- v
 			}
@@ -107,7 +107,7 @@ func (r *Reddit) streamSubredditComments(subreddit string) (<-chan models.Commen
 }
 
 func (r *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment, chan bool, error) {
-	c := make(chan models.Comment, 25)
+	c := make(chan models.Comment, 100)
 	stop := make(chan bool, 1)
 	anchor, err := r.Redditor(redditor).Comments("new", "hour", 1)
 	if err != nil {
@@ -120,7 +120,7 @@ func (r *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment,
 	go func() {
 		for {
 			stop <- false
-			un, _ := r.Redditor(redditor).CommentsAfter("new", last, 25)
+			un, _ := r.Redditor(redditor).CommentsAfter("new", last, 100)
 			for _, v := range un {
 				c <- v
 			}
@@ -151,7 +151,7 @@ func (r *Reddit) StreamSubmissions() (<-chan models.PostListingChild, chan bool,
 }
 
 func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.PostListingChild, chan bool, error) {
-	c := make(chan models.PostListingChild, 25)
+	c := make(chan models.PostListingChild, 100)
 	stop := make(chan bool, 1)
 	anchor, err := r.Subreddit(subreddit).Submissions("new", "hour", 1)
 	if err != nil {
@@ -181,7 +181,7 @@ func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.Pos
 }
 
 func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan models.PostListingChild, chan bool, error) {
-	c := make(chan models.PostListingChild, 25)
+	c := make(chan models.PostListingChild, 100)
 	stop := make(chan bool, 1)
 	anchor, err := r.Redditor(redditor).Submissions("new", "hour", 1)
 	if err != nil {
