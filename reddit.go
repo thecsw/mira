@@ -627,6 +627,16 @@ func (c *Reddit) UserFlair(user, text string) error {
 	return err
 }
 
+func (c *Reddit) UserFlairWithID(name, user, text string) error {
+	target := RedditOauth + "/r/" + name + "/api/flair"
+	_, err := c.MiraRequest("POST", target, map[string]string{
+		"name":     user,
+		"text":     text,
+		"api_type": "json",
+	})
+	return err
+}
+
 func (c *Reddit) SelectFlair(text string) error {
 	name, _, err := c.checkType("submission")
 	if err != nil {
