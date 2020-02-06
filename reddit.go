@@ -10,8 +10,14 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/thecsw/mira/models"
+)
+
+var (
+	requestMutex *sync.RWMutex = &sync.RWMutex{}
+	queueMutex   *sync.RWMutex = &sync.RWMutex{}
 )
 
 func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {
@@ -25,9 +31,11 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 	if err != nil {
 		return nil, err
 	}
+	requestMutex.Lock()
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "Bearer "+c.Token)
 	response, err := c.Client.Do(r)
+	requestMutex.Unlock()
 	if err != nil {
 		return nil, err
 	}
@@ -438,12 +446,36 @@ func (c *Reddit) Reply(text string) (models.CommentWrap, error) {
 	return *ret, err
 }
 
+func (c *Reddit) ReplyWithID(name, text string) (models.CommentWrap, error) {
+	ret := &models.CommentWrap{}
+	target := RedditOauth + "/api/comment"
+	ans, err := c.MiraRequest("POST", target, map[string]string{
+		"text":     text,
+		"thing_id": name,
+		"api_type": "json",
+	})
+	json.Unmarshal(ans, ret)
+	return *ret, err
+}
+
 func (c *Reddit) Save(text string) (models.CommentWrap, error) {
 	ret := &models.CommentWrap{}
 	name, _, err := c.checkType("submission")
 	if err != nil {
 		return *ret, err
 	}
+	target := RedditOauth + "/api/comment"
+	ans, err := c.MiraRequest("POST", target, map[string]string{
+		"text":     text,
+		"thing_id": name,
+		"api_type": "json",
+	})
+	json.Unmarshal(ans, ret)
+	return *ret, err
+}
+
+func (c *Reddit) SaveWithID(name, text string) (models.CommentWrap, error) {
+	ret := &models.CommentWrap{}
 	target := RedditOauth + "/api/comment"
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
@@ -621,10 +653,14 @@ func (c *Reddit) checkType(rtype ...string) (string, string, error) {
 }
 
 func (c *Reddit) addQueue(name string, ttype string) {
+	queueMutex.Lock()
+	defer queueMutex.Unlock()
 	c.Chain = append(c.Chain, ChainVals{Name: name, Type: ttype})
 }
 
 func (c *Reddit) getQueue() (string, string) {
+	queueMutex.Lock()
+	defer queueMutex.Unlock()
 	if len(c.Chain) < 1 {
 		return "", ""
 	}
