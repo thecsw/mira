@@ -641,6 +641,16 @@ func (c *Reddit) SelectFlair(text string) error {
 	return err
 }
 
+func (c *Reddit) SelectFlairWithID(name, text string) error {
+	target := RedditOauth + "/api/selectflair"
+	_, err = c.MiraRequest("POST", target, map[string]string{
+		"link":     name,
+		"text":     text,
+		"api_type": "json",
+	})
+	return err
+}
+
 func (c *Reddit) checkType(rtype ...string) (string, string, error) {
 	name, ttype := c.getQueue()
 	if name == "" {
