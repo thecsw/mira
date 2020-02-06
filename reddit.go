@@ -643,7 +643,7 @@ func (c *Reddit) SelectFlair(text string) error {
 
 func (c *Reddit) SelectFlairWithID(name, text string) error {
 	target := RedditOauth + "/api/selectflair"
-	_, err = c.MiraRequest("POST", target, map[string]string{
+	_, err := c.MiraRequest("POST", target, map[string]string{
 		"link":     name,
 		"text":     text,
 		"api_type": "json",
