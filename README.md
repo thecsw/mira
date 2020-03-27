@@ -86,7 +86,7 @@ mentions, new subreddit's/redditor's comments, and new subreddit's/redditor's su
 // r is an instance of *mira.Reddit
 
 // Start streaming my comment replies
-c, _ := r.StreamCommentReplies()
+c, err := r.StreamCommentReplies()
 for {
 	msg := <-c
 	r.Comment(msg.GetId()).Reply("I got your message!")
@@ -94,14 +94,14 @@ for {
 
 // Start streaming my mentions
 // Start streaming my comment replies
-c, _ := r.StreamMentions()
+c, err := r.StreamMentions()
 for {
 	msg := <-c
 	r.Comment(msg.GetId()).Reply("I got your mention of me!")
 }
 
 // Start streaming subreddits' submissions
-c, _, _ := r.Subreddit("tifu", "wholesomememes").StreamSubmissions()
+c, err := r.Subreddit("tifu", "wholesomememes").StreamSubmissions()
 for {
 	post := <-c
 	r.Submission(post.GetId()).Save("hello there")
@@ -112,21 +112,21 @@ for {
 // Basically, `stop <- true`
 
 // Start streaming subreddits' comments
-c, _, _ := r.Subreddit("all").StreamComments()
+c, err := r.Subreddit("all").StreamComments()
 for {
 	msg := <-c
 	r.Comment(msg.GetId()).Reply("my reply!")
 }
 
 // Start streaming redditor's submissions
-c, _, _ := r.Redditor("thecsw").StreamSubmissions()
+c, err := r.Redditor("thecsw").StreamSubmissions()
 for {
 	post := <-c
 	r.Submission(post.GetId()).Save("hello there")
 }
 	
 // Start streaming redditor' comments
-c, _, _ := r.Redditor("thecsw").StreamComments()
+c, err := r.Redditor("thecsw").StreamComments()
 for {
 	msg := <-c
 	r.Comment(msg.GetId()).Reply("my reply!")
@@ -147,24 +147,24 @@ import (
 	"github.com/thecsw/mira"
 )
 
-// Errors are omitted for brevity
+// Error checking is omitted for brevity
 func main() {
-	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	r, err := mira.Init(mira.ReadCredsFromFile("login.conf"))
 
 	// Make a submission
-	post, _ := r.Subreddit("mysubreddit").Submit("mytitle", "mytext")
+	post, err := r.Subreddit("mysubreddit").Submit("mytitle", "mytext")
 
 	// Comment on our new submission
-	comment, _ := r.Submission(post.GetId()).Save("mycomment")
+	comment, err := r.Submission(post.GetId()).Save("mycomment")
 
 	// Reply to our own comment
-	reply, _ := r.Comment(comment.GetId()).Reply("myreply")
+	reply, err := r.Comment(comment.GetId()).Reply("myreply")
 
 	// Delete the reply
 	r.Comment(reply.GetId()).Delete()
 
 	// Edit the first comment
-	newComment, _ := r.Comment(comment.GetId()).Edit("myedit")
+	newComment, err := r.Comment(comment.GetId()).Edit("myedit")
 
 	// Show the comment's body
 	fmt.Println(newComment.GetBody())
@@ -183,7 +183,7 @@ import (
 )
 
 func main() {
-	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	r, err := mira.Init(mira.ReadCredsFromFile("login.conf"))
 
 	r.Redditor("myuser").Compose("mytitle", "mytext")
 }
@@ -204,11 +204,11 @@ import (
 )
 
 func main() {
-	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	r, err := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	sort := "top"
 	var limit int = 25
 	duration := "all"
-	subs, _ := r.Subreddit("all").Submissions(sort, duration, limit)
+	subs, err := r.Subreddit("all").Submissions(sort, duration, limit)
 	for _, v := range subs {
 		fmt.Println("Submission Title: ", v.GetTitle())
 	}
@@ -230,12 +230,12 @@ import (
 )
 
 func main() {
-	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
-	me, _ := r.Me().Info()
-	comment, _ := r.Comment("t1_...").Info()
-	redditor, _ := r.Redditor.Info("t2_...")
-	submission, _ := r.Submission("t3_...").Info()
-	subreddit, _ := r.Subreddit("t5_...").Info()
+	r, err := mira.Init(mira.ReadCredsFromFile("login.conf"))
+	me, err := r.Me().Info()
+	comment, err := r.Comment("t1_...").Info()
+	redditor, err := r.Redditor.Info("t2_...")
+	submission, err := r.Submission("t3_...").Info()
+	subreddit, err := r.Subreddit("t5_...").Info()
 }
 ```
 
@@ -275,9 +275,35 @@ It is pretty straight-forward. The return is a slice of bytes. Parse it yourself
 
 Here is an example of how Reddit.Reply() uses MiraRequest:
 
+NOTE: `checkType(...)` is a quick method to pop a value from the
+queue and make sure it's a valid value and type. For example,
+
+``` go
+r.Comment("COMM1").Submission("SUBM1").Redditor("USER1")
+```
+
+will add elements to its internal queue, so that the layout is:
+
+```
+Enqueue->
+              redditor  submission  comment               // type
+	|BACK| -> |USER1| -> |SUBM1| -> |COMM1| -> |FRONT|    // value
+                                                  Dequeue->
+```
+
+So that when you run `r.checkType("comment")`, it will dequeue `COMM1`
+and return triplet `"COMM1", "comment", nil`.
+
+If you run `r.checkType("redditor")` (will fail because subm is at the end),
+you will get `"", "", "errors.New("the passed type...")`
+
+Here is an example of how you check that the last element to dequeue is
+a type that you're expecting:
+
 ``` go
 func (c *Reddit) Reply(text string) (models.CommentWrap, error) {
 	ret := &models.CommentWrap{}
+	// Second return is type, which is "comment"
 	name, _, err := c.checkType("comment")
 	if err != nil {
 		return *ret, err
