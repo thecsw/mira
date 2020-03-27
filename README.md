@@ -45,11 +45,17 @@ of the structs.
 The config file structure is very simple:
 
 ```
+login.conf
+----------
 CLIENT_ID =
 CLIENT_SECRET =
 USERNAME =
 PASSWORD =
 USER_AGENT =
+```
+
+``` go
+r, err := mira.Init(mira.ReadCredsFromFile("login.conf"))
 ```
 
 ## Environment setup
@@ -84,6 +90,7 @@ mentions, new subreddit's/redditor's comments, and new subreddit's/redditor's su
 
 ``` go
 // r is an instance of *mira.Reddit
+r, err := mira.Init(mira.ReadCredsFromFile("login.conf"))
 
 // Start streaming my comment replies
 c, err := r.StreamCommentReplies()
