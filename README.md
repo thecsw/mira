@@ -7,17 +7,13 @@
 
 For full documentation, please see the [Godoc page](https://godoc.org/github.com/thecsw/mira)
 
-MIRA is a Reddit Api Wrapper written in beautiful Go. This is a subproject
-of a bigger project MemeInvestor_bot. 
+*mira* is a Reddit Api Wrapper written in beautiful Go.
 
-It is super simple to use the bot as we also provide you
-with simple but fully extensive structs. We utilize the 
-best features of Go, such as closures, channels, goroutines, garbage collection, etc.
-
-Currently, `mira` is a project that just began its life. We still have many new Reddit
-endpoints to cover. We have the basic functionality implemented, like streaming comment
-replies, new submissions. Comment, post, edit, reply, and delete options for our
-instances.
+It is super simple to use the bot as we also provide you with simple but fully extensive 
+interfaces. Currently, *mira* is a project that is considered more or less complete. All
+main functionality, such as streaming, data manipulation, data request, submissions, links,
+etc. are fully implemented. *mira* can be extended to use any Reddit API endpoint. More 
+details at the bottom of this page.
 
 ## Demo
 
