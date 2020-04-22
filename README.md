@@ -1,4 +1,4 @@
-# MIRA or Meme Investor Reddit Api
+![mira](./mira.png)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/thecsw/mira)](https://goreportcard.com/report/github.com/thecsw/mira)
 [![Build Status](https://travis-ci.org/thecsw/mira.svg?branch=master)](https://travis-ci.org/thecsw/mira)
