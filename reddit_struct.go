@@ -9,7 +9,7 @@ type Reddit struct {
 	Token    string  `json:"access_token"`
 	Duration float64 `json:"expires_in"`
 	Creds    Credentials
-	Chain    []ChainVals
+	Chain    chan *ChainVals
 	Stream   Streaming
 	Values   RedditVals
 	Client   *http.Client

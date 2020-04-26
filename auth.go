@@ -61,6 +61,7 @@ func Authenticate(c *Credentials) (*Reddit, error) {
 	}
 
 	auth := Reddit{}
+	auth.Chain = make(chan *ChainVals, 32)
 	json.Unmarshal(data, &auth)
 	auth.Creds = *c
 	return &auth, nil
