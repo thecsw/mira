@@ -10,14 +10,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/thecsw/mira/models"
-)
-
-var (
-	requestMutex *sync.RWMutex = &sync.RWMutex{}
-	queueMutex   *sync.RWMutex = &sync.RWMutex{}
 )
 
 func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {
@@ -31,11 +25,9 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 	if err != nil {
 		return nil, err
 	}
-	requestMutex.Lock()
 	r.Header.Set("User-Agent", c.Creds.UserAgent)
 	r.Header.Set("Authorization", "Bearer "+c.Token)
 	response, err := c.Client.Do(r)
-	requestMutex.Unlock()
 	if err != nil {
 		return nil, err
 	}
@@ -50,28 +42,23 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 }
 
 func (c *Reddit) Me() *Reddit {
-	c.addQueue(c.Creds.Username, "me")
-	return c
+	return c.addQueue(c.Creds.Username, "me")
 }
 
 func (c *Reddit) Subreddit(name ...string) *Reddit {
-	c.addQueue(strings.Join(name, "+"), "subreddit")
-	return c
+	return c.addQueue(strings.Join(name, "+"), "subreddit")
 }
 
 func (c *Reddit) Submission(name string) *Reddit {
-	c.addQueue(name, "submission")
-	return c
+	return c.addQueue(name, "submission")
 }
 
 func (c *Reddit) Comment(name string) *Reddit {
-	c.addQueue(name, "comment")
-	return c
+	return c.addQueue(name, "comment")
 }
 
 func (c *Reddit) Redditor(name string) *Reddit {
-	c.addQueue(name, "redditor")
-	return c
+	return c.addQueue(name, "redditor")
 }
 
 func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]models.PostListingChild, error) {
@@ -672,20 +659,17 @@ func (c *Reddit) checkType(rtype ...string) (string, string, error) {
 	return name, ttype, nil
 }
 
-func (c *Reddit) addQueue(name string, ttype string) {
-	queueMutex.Lock()
-	defer queueMutex.Unlock()
-	c.Chain = append(c.Chain, ChainVals{Name: name, Type: ttype})
+func (c *Reddit) addQueue(name string, ttype string) *Reddit {
+	c.Chain <- &ChainVals{Name: name, Type: ttype}
+	return c
 }
 
 func (c *Reddit) getQueue() (string, string) {
-	queueMutex.Lock()
-	defer queueMutex.Unlock()
 	if len(c.Chain) < 1 {
 		return "", ""
 	}
-	defer func() { c.Chain = c.Chain[1:] }()
-	return c.Chain[0].Name, c.Chain[0].Type
+	temp := <-c.Chain
+	return temp.Name, temp.Type
 }
 
 func findElem(elem string, arr []string) bool {
