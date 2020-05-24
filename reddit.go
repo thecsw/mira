@@ -14,6 +14,15 @@ import (
 	"github.com/thecsw/mira/models"
 )
 
+// Surely, Reddit API is always developing and I can't implement all endpoints.
+// It will be a bit of a bloat. Instead, you have accessto *Reddit.MiraRequest
+// method that will let you to do any custom reddit api calls!
+//
+// Here is the signature:
+//
+//   func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {...}
+//
+// It is pretty straight-forward. The return is a slice of bytes. Parse it yourself.
 func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {
 	values := "?"
 	for i, v := range payload {
@@ -41,26 +50,38 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 	return data, nil
 }
 
+// Me pushes a new Redditor value
 func (c *Reddit) Me() *Reddit {
 	return c.addQueue(c.Creds.Username, "me")
 }
 
+// Subreddit pushes a new subreddit value to the internal queue
 func (c *Reddit) Subreddit(name ...string) *Reddit {
 	return c.addQueue(strings.Join(name, "+"), "subreddit")
 }
 
+// Submission pushes a new submission value to the internal queue
 func (c *Reddit) Submission(name string) *Reddit {
 	return c.addQueue(name, "submission")
 }
 
+// Comment pushes a new comment value to the internal queue
 func (c *Reddit) Comment(name string) *Reddit {
 	return c.addQueue(name, "comment")
 }
 
+// Redditor pushes a new redditor value to the internal queue
 func (c *Reddit) Redditor(name string) *Reddit {
 	return c.addQueue(name, "redditor")
 }
 
+// Submissions returns submissions from a subreddit up to a specified limit sorted by the given parameters
+//
+// Sorting options: "hot", "new", "top", "rising", "controversial", "random"
+//
+// Duration options: "hour", "day", "week", "year", "all"
+//
+// Limit is any numerical value, so 0 <= limit <= 100
 func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]models.PostListingChild, error) {
 	name, ttype := c.getQueue()
 	switch ttype {
@@ -73,6 +94,11 @@ func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]models.Post
 	}
 }
 
+// SubmissionsAfter returns new submissions from a subreddit
+//
+// Last is the anchor of a submission id
+//
+// Limit is any numerical value, so 0 <= limit <= 100
 func (c *Reddit) SubmissionsAfter(last string, limit int) ([]models.PostListingChild, error) {
 	name, ttype := c.getQueue()
 	switch ttype {
@@ -85,6 +111,13 @@ func (c *Reddit) SubmissionsAfter(last string, limit int) ([]models.PostListingC
 	}
 }
 
+// Comments returns comments from a subreddit up to a specified limit sorted by the given parameters
+//
+// Sorting options: "hot", "new", "top", "rising", "controversial", "random"
+//
+// Duration options: "hour", "day", "week", "year", "all"
+//
+// Limit is any numerical value, so 0 <= limit <= 100
 func (c *Reddit) Comments(sort string, tdur string, limit int) ([]models.Comment, error) {
 	name, ttype := c.getQueue()
 	switch ttype {
@@ -103,6 +136,24 @@ func (c *Reddit) Comments(sort string, tdur string, limit int) ([]models.Comment
 	}
 }
 
+// CommentsAfter returns new comments from a subreddit
+//
+// Last is the anchor of a comment id
+//
+// Limit is any numerical value, so 0 <= limit <= 100
+func (c *Reddit) CommentsAfter(sort string, last string, limit int) ([]models.Comment, error) {
+	name, ttype := c.getQueue()
+	switch ttype {
+	case "subreddit":
+		return c.getSubredditCommentsAfter(name, sort, last, limit)
+	case "redditor":
+		return c.getRedditorCommentsAfter(name, sort, last, limit)
+	default:
+		return nil, fmt.Errorf("'%s' type does not have an option for comments", ttype)
+	}
+}
+
+// Info returns MiraInterface of last pushed object
 func (c *Reddit) Info() (MiraInterface, error) {
 	name, ttype := c.getQueue()
 	switch ttype {
@@ -158,6 +209,8 @@ func (c *Reddit) getComment(id string) (models.Comment, error) {
 	return ret.GetChildren()[0], err
 }
 
+// ExtractSubmission extracts submission id from last pushed object
+// does not make an api call like .Root(), use this instead
 func (c *Reddit) ExtractSubmission() (string, error) {
 	name, _, err := c.checkType("comment")
 	if err != nil {
@@ -176,31 +229,8 @@ func (c *Reddit) ExtractSubmission() (string, error) {
 	return "t3_" + res[1], nil
 }
 
-// This function will return the submission id of a comment
-//
-// Comment id has form of t1_... where submission is prefixed with t3_...
-//
-// Comment structures in themselves do not have submission id included,
-// they only have a parent_id field that points to a parent comment or a
-// submission. If it does not point directly at the submission, we need to
-// make iterative calls until we bump into an id that fits the submission
-// prefix. It may take several calls.
-//
-// For example:
-//
-// - If comment is first-level, we make one call to get the object and
-// extract the submission id. If you already have a Go struct at hand,
-// please just invoke .GetParentId() to get the parent id
-//
-// - If comment is second-level, it would take two calls to extact the
-// submission id. If you want to save a call, you can pass a parent_id
-// instead that would take 1 call instead of 2.
-//
-// - If comment is N-level, it would take N calls. If you aleady have an
-// object, just pass in its object, so it would take N-1 calls.
-//
-// NOTE: If any error occurs, the method will return on error object.
-// If it takes more than 12 calls, the function bails out.
+// Root will return the submission id of a comment
+// Very expensive on API calls. Please use .ExtractSubmission() instead
 func (c *Reddit) Root() (string, error) {
 	name, _, err := c.checkType("comment")
 	if err != nil {
@@ -272,13 +302,6 @@ func (c *Reddit) getRedditorPostsAfter(user string, last string, limit int) ([]m
 	return ret.GetChildren(), err
 }
 
-// Get submisssions from a subreddit up to a specified limit sorted by the given parameter
-//
-// Sorting options: "hot", "new", "top", "rising", "controversial", "random"
-//
-// Time options: "all", "year", "month", "week", "day", "hour"
-//
-// Limit is any numerical value, so 0 <= limit <= 100
 func (c *Reddit) getSubredditPosts(sr string, sort string, tdur string, limit int) ([]models.PostListingChild, error) {
 	target := RedditOauth + "/r/" + sr + "/" + sort + ".json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
@@ -355,14 +378,6 @@ func (c *Reddit) getSubmissionComments(post_id string, sort string, tdur string,
 	return ret, children, nil
 }
 
-// Get submisssions from a subreddit up to a specified limit sorted by the given parameters
-// and with specified anchor
-//
-// Sorting options: "hot", "new", "top", "rising", "controversial", "random"
-//
-// Limit is any numerical value, so 0 <= limit <= 100
-//
-// Anchor options are submissions full thing, for example: t3_bqqwm3
 func (c *Reddit) getSubredditPostsAfter(sr string, last string, limit int) ([]models.PostListingChild, error) {
 	target := RedditOauth + "/r/" + sr + "/new.json"
 	ans, err := c.MiraRequest("GET", target, map[string]string{
@@ -372,18 +387,6 @@ func (c *Reddit) getSubredditPostsAfter(sr string, last string, limit int) ([]mo
 	ret := &models.PostListing{}
 	json.Unmarshal(ans, ret)
 	return ret.GetChildren(), err
-}
-
-func (c *Reddit) CommentsAfter(sort string, last string, limit int) ([]models.Comment, error) {
-	name, ttype := c.getQueue()
-	switch ttype {
-	case "subreddit":
-		return c.getSubredditCommentsAfter(name, sort, last, limit)
-	case "redditor":
-		return c.getRedditorCommentsAfter(name, sort, last, limit)
-	default:
-		return nil, fmt.Errorf("'%s' type does not have an option for comments", ttype)
-	}
 }
 
 func (c *Reddit) getSubredditCommentsAfter(sr string, sort string, last string, limit int) ([]models.Comment, error) {
@@ -398,6 +401,7 @@ func (c *Reddit) getSubredditCommentsAfter(sr string, sort string, last string, 
 	return ret.GetChildren(), err
 }
 
+// Submit submits a submission to a subreddit
 func (c *Reddit) Submit(title string, text string) (models.Submission, error) {
 	ret := &models.Submission{}
 	name, _, err := c.checkType("subreddit")
@@ -417,6 +421,7 @@ func (c *Reddit) Submit(title string, text string) (models.Submission, error) {
 	return *ret, err
 }
 
+// Reply replies to a comment with text
 func (c *Reddit) Reply(text string) (models.CommentWrap, error) {
 	ret := &models.CommentWrap{}
 	name, _, err := c.checkType("comment")
@@ -433,6 +438,7 @@ func (c *Reddit) Reply(text string) (models.CommentWrap, error) {
 	return *ret, err
 }
 
+// ReplyWithID is the same as Reply but with explicit passing comment id
 func (c *Reddit) ReplyWithID(name, text string) (models.CommentWrap, error) {
 	ret := &models.CommentWrap{}
 	target := RedditOauth + "/api/comment"
@@ -445,6 +451,7 @@ func (c *Reddit) ReplyWithID(name, text string) (models.CommentWrap, error) {
 	return *ret, err
 }
 
+// Save posts a comment to a submission
 func (c *Reddit) Save(text string) (models.CommentWrap, error) {
 	ret := &models.CommentWrap{}
 	name, _, err := c.checkType("submission")
@@ -461,6 +468,7 @@ func (c *Reddit) Save(text string) (models.CommentWrap, error) {
 	return *ret, err
 }
 
+// SaveWithID is the same as Save but with explicitely passing
 func (c *Reddit) SaveWithID(name, text string) (models.CommentWrap, error) {
 	ret := &models.CommentWrap{}
 	target := RedditOauth + "/api/comment"
@@ -473,6 +481,7 @@ func (c *Reddit) SaveWithID(name, text string) (models.CommentWrap, error) {
 	return *ret, err
 }
 
+// Delete deletes whatever is next in the queue
 func (c *Reddit) Delete() error {
 	name, _, err := c.checkType("comment", "submission")
 	if err != nil {
@@ -486,6 +495,8 @@ func (c *Reddit) Delete() error {
 	return err
 }
 
+// Approve is a mod tool to approve a comment or a submission
+// Will fail if not a mod
 func (c *Reddit) Approve() error {
 	name, _, err := c.checkType("comment")
 	if err != nil {
@@ -499,6 +510,8 @@ func (c *Reddit) Approve() error {
 	return err
 }
 
+// Distinguish is a mod tool to distinguish a comment or a submission
+// Will fail if not a mod
 func (c *Reddit) Distinguish(how string, sticky bool) error {
 	name, _, err := c.checkType("comment")
 	if err != nil {
@@ -514,6 +527,7 @@ func (c *Reddit) Distinguish(how string, sticky bool) error {
 	return err
 }
 
+// Edit will edit the next queued comment
 func (c *Reddit) Edit(text string) (models.CommentWrap, error) {
 	ret := &models.CommentWrap{}
 	name, _, err := c.checkType("comment", "submission")
@@ -530,6 +544,7 @@ func (c *Reddit) Edit(text string) (models.CommentWrap, error) {
 	return *ret, err
 }
 
+// Compose will send a message to next redditor
 func (c *Reddit) Compose(subject, text string) error {
 	name, _, err := c.checkType("redditor")
 	if err != nil {
@@ -545,6 +560,7 @@ func (c *Reddit) Compose(subject, text string) error {
 	return err
 }
 
+// ReadMessage marks the next comment/message as read
 func (c *Reddit) ReadMessage(message_id string) error {
 	_, _, err := c.checkType("me")
 	if err != nil {
@@ -557,6 +573,7 @@ func (c *Reddit) ReadMessage(message_id string) error {
 	return err
 }
 
+// ReadAllMessages uses ReadMessage on all unread messages
 func (c *Reddit) ReadAllMessages() error {
 	_, _, err := c.checkType("me")
 	if err != nil {
@@ -567,6 +584,7 @@ func (c *Reddit) ReadAllMessages() error {
 	return err
 }
 
+// ListUnreadMessages returns a list of all unread messages
 func (c *Reddit) ListUnreadMessages() ([]models.Comment, error) {
 	_, _, err := c.checkType("me")
 	if err != nil {
@@ -581,6 +599,7 @@ func (c *Reddit) ListUnreadMessages() ([]models.Comment, error) {
 	return ret.GetChildren(), err
 }
 
+// UpdateSidebar updates subreddit's sidebar. Needs mod privileges
 func (c *Reddit) UpdateSidebar(text string) error {
 	name, _, err := c.checkType("subreddit")
 	if err != nil {
@@ -600,6 +619,7 @@ func (c *Reddit) UpdateSidebar(text string) error {
 	return err
 }
 
+// UserFlair updates user's flair in a sub. Needs mod permissions
 func (c *Reddit) UserFlair(user, text string) error {
 	name, _, err := c.checkType("subreddit")
 	if err != nil {
@@ -614,6 +634,7 @@ func (c *Reddit) UserFlair(user, text string) error {
 	return err
 }
 
+// UserFlairWithID is the same as UserFlair but explicit redditor name
 func (c *Reddit) UserFlairWithID(name, user, text string) error {
 	target := RedditOauth + "/r/" + name + "/api/flair"
 	_, err := c.MiraRequest("POST", target, map[string]string{
@@ -624,6 +645,7 @@ func (c *Reddit) UserFlairWithID(name, user, text string) error {
 	return err
 }
 
+// SelectFlair sets a submission flair
 func (c *Reddit) SelectFlair(text string) error {
 	name, _, err := c.checkType("submission")
 	if err != nil {
@@ -638,6 +660,7 @@ func (c *Reddit) SelectFlair(text string) error {
 	return err
 }
 
+// SelectFlairWithID sets submission flair with explicit ID
 func (c *Reddit) SelectFlairWithID(name, text string) error {
 	target := RedditOauth + "/api/selectflair"
 	_, err := c.MiraRequest("POST", target, map[string]string{
@@ -681,6 +704,7 @@ func findElem(elem string, arr []string) bool {
 	return false
 }
 
+// RedditErr is a struct to store reddit error messages
 type RedditErr struct {
 	Message string `json:"message"`
 	Error   string `json:"error"`

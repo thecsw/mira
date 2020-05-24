@@ -1,5 +1,8 @@
 package mira
 
+// MiraInterface is the interface that unites
+// most of the reddit objects that mira uses
+// and exposes some of the most used methods
 type MiraInterface interface {
 	GetId() string
 	GetParentId() string

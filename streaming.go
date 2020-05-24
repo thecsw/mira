@@ -6,8 +6,8 @@ import (
 	"github.com/thecsw/mira/models"
 )
 
+// StreamCommentReplies streams comment replies
 // c is the channel with all unread messages
-// stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamCommentReplies() <-chan models.Comment {
 	c := make(chan models.Comment, 100)
 	go func() {
@@ -28,8 +28,8 @@ func (r *Reddit) StreamCommentReplies() <-chan models.Comment {
 	return c
 }
 
+// StreamMentions streams recent mentions
 // c is the channel with all unread messages
-// stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamMentions() <-chan models.Comment {
 	c := make(chan models.Comment, 100)
 	go func() {
@@ -50,8 +50,8 @@ func (r *Reddit) StreamMentions() <-chan models.Comment {
 	return c
 }
 
+// StreamComments streams comments from a redditor or a subreddit
 // c is the channel with all comments
-// stop is the channel to stop the stream. Do stop <- true to stop the loop
 func (r *Reddit) StreamComments() (<-chan models.Comment, error) {
 	name, ttype, err := r.checkType("subreddit", "redditor")
 	if err != nil {
@@ -62,6 +62,22 @@ func (r *Reddit) StreamComments() (<-chan models.Comment, error) {
 		return r.streamSubredditComments(name)
 	case "redditor":
 		return r.streamRedditorComments(name)
+	}
+	return nil, nil
+}
+
+/// StreamSubmissions streams submissions from a redditor or a subreddit
+// c is the channel with all submissions
+func (r *Reddit) StreamSubmissions() (<-chan models.PostListingChild, error) {
+	name, ttype, err := r.checkType("subreddit", "redditor")
+	if err != nil {
+		return nil, err
+	}
+	switch ttype {
+	case "subreddit":
+		return r.streamSubredditSubmissions(name)
+	case "redditor":
+		return r.streamRedditorSubmissions(name)
 	}
 	return nil, nil
 }
@@ -118,20 +134,6 @@ func (r *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment,
 		}
 	}()
 	return c, nil
-}
-
-func (r *Reddit) StreamSubmissions() (<-chan models.PostListingChild, error) {
-	name, ttype, err := r.checkType("subreddit", "redditor")
-	if err != nil {
-		return nil, err
-	}
-	switch ttype {
-	case "subreddit":
-		return r.streamSubredditSubmissions(name)
-	case "redditor":
-		return r.streamRedditorSubmissions(name)
-	}
-	return nil, nil
 }
 
 func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.PostListingChild, error) {

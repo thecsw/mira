@@ -18,7 +18,7 @@ type Credentials struct {
 	UserAgent    string
 }
 
-// Returns an access_token acquired using the provided credentials
+// Authenticate returns *Reddit object that has been authed
 func Authenticate(c *Credentials) (*Reddit, error) {
 	// URL to get access_token
 	auth_url := RedditBase + "api/v1/access_token"
@@ -84,6 +84,7 @@ func (c *Reddit) update_creds() {
 	c.Token = temp.Token
 }
 
+// SetDefault sets all default values
 func (c *Reddit) SetDefault() {
 	c.Stream = Streaming{
 		CommentListInterval: 8,
@@ -95,6 +96,7 @@ func (c *Reddit) SetDefault() {
 	}
 }
 
+// SetClient sets mira's *http.Client to make requests
 func (c *Reddit) SetClient(client *http.Client) {
 	c.Client = client
 }

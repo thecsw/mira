@@ -2,7 +2,8 @@ package mira
 
 import "net/http"
 
-// When we initialize the Reddit instance,
+// Init is used
+// when we initialize the Reddit instance,
 // automatically start a goroutine that will
 // update the token every 45 minutes. The
 // auto_refresh should not be accessible to

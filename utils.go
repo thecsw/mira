@@ -6,6 +6,7 @@ import (
 	"regexp"
 )
 
+// ReadCredsFromFile reads mira credentials from a given file path
 func ReadCredsFromFile(file string) Credentials {
 	// Declare all regexes
 	ClientId, _ := regexp.Compile(`CLIENT_ID\s*=\s*(.+)`)
@@ -28,8 +29,7 @@ func ReadCredsFromFile(file string) Credentials {
 	return creds
 }
 
-// Assuming that they all exist. Probably a bad idea. We can
-// expand it later and do a more aggressive error handling.
+// ReadCredsFromEnv reads mira credentials from environment
 func ReadCredsFromEnv() Credentials {
 	return Credentials{
 		os.Getenv("BOT_CLIENT_ID"),
