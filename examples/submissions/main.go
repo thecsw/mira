@@ -9,7 +9,7 @@ import (
 func main() {
 	r, _ := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	sort := "top"
-	var limit int = 25
+	var limit = 25
 	duration := "all"
 	subs, _ := r.Subreddit("all").Submissions(sort, duration, limit)
 	for _, v := range subs {

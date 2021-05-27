@@ -53,30 +53,30 @@ func (r *Reddit) StreamMentions() <-chan models.Comment {
 // StreamComments streams comments from a redditor or a subreddit
 // c is the channel with all comments
 func (r *Reddit) StreamComments() (<-chan models.Comment, error) {
-	name, ttype, err := r.checkType("subreddit", "redditor")
+	name, ttype, err := r.checkType(subredditType, redditorType)
 	if err != nil {
 		return nil, err
 	}
 	switch ttype {
-	case "subreddit":
+	case subredditType:
 		return r.streamSubredditComments(name)
-	case "redditor":
+	case redditorType:
 		return r.streamRedditorComments(name)
 	}
 	return nil, nil
 }
 
-/// StreamSubmissions streams submissions from a redditor or a subreddit
-// c is the channel with all submissions
+// StreamSubmissions streams submissions from a redditor or a subreddit
+// c is the channel with all submissions.
 func (r *Reddit) StreamSubmissions() (<-chan models.PostListingChild, error) {
-	name, ttype, err := r.checkType("subreddit", "redditor")
+	name, ttype, err := r.checkType(subredditType, redditorType)
 	if err != nil {
 		return nil, err
 	}
 	switch ttype {
-	case "subreddit":
+	case subredditType:
 		return r.streamSubredditSubmissions(name)
-	case "redditor":
+	case redditorType:
 		return r.streamRedditorSubmissions(name)
 	}
 	return nil, nil
