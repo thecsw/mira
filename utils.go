@@ -1,10 +1,72 @@
 package mira
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 )
+
+// Short runes to variablize our types.
+const (
+	submissionType = "s"
+	subredditType  = "b"
+	commentType    = "c"
+	redditorType   = "r"
+	meType         = "m"
+)
+
+func (c *Reddit) checkType(rtype ...string) (string, string, error) {
+	name, ttype := c.getQueue()
+	if name == "" {
+		return "", "", fmt.Errorf("identifier is empty")
+	}
+	if !findElem(ttype, rtype) {
+		return "", "", fmt.Errorf(
+			"the passed type is not a valid type for this call | expected: %s",
+			strings.Join(rtype, ", "))
+	}
+	return name, ttype, nil
+}
+
+func (c *Reddit) addQueue(name string, ttype string) *Reddit {
+	c.Chain <- &ChainVals{Name: name, Type: ttype}
+	return c
+}
+
+func (c *Reddit) getQueue() (string, string) {
+	if len(c.Chain) < 1 {
+		return "", ""
+	}
+	temp := <-c.Chain
+	return temp.Name, temp.Type
+}
+
+func findElem(elem string, arr []string) bool {
+	for _, v := range arr {
+		if elem == v {
+			return true
+		}
+	}
+	return false
+}
+
+// RedditErr is a struct to store reddit error messages.
+type RedditErr struct {
+	Message string `json:"message"`
+	Error   string `json:"error"`
+}
+
+func findRedditError(data []byte) error {
+	object := &RedditErr{}
+	json.Unmarshal(data, object)
+	if object.Message != "" || object.Error != "" {
+		return fmt.Errorf("%s | error code: %s", object.Message, object.Error)
+	}
+	return nil
+}
 
 // ReadCredsFromFile reads mira credentials from a given file path
 func ReadCredsFromFile(file string) Credentials {
