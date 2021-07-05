@@ -15,6 +15,6 @@ func Init(c Credentials) (*Reddit, error) {
 	}
 	auth.Client = &http.Client{}
 	auth.SetDefault()
-	go auth.auto_refresh()
+	go auth.autoRefresh()
 	return auth, nil
 }

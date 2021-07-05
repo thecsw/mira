@@ -8,83 +8,83 @@ import (
 
 // StreamCommentReplies streams comment replies
 // c is the channel with all unread messages
-func (r *Reddit) StreamCommentReplies() <-chan models.Comment {
-	c := make(chan models.Comment, 100)
+func (c *Reddit) StreamCommentReplies() <-chan models.Comment {
+	ret := make(chan models.Comment, 100)
 	go func() {
 		for {
-			un, _ := r.Me().ListUnreadMessages()
+			un, _ := c.Me().ListUnreadMessages()
 			for _, v := range un {
 				if v.IsCommentReply() {
 					// Only process comment replies and
 					// mark them as read.
-					c <- v
+					ret <- v
 					// You can read the message with
-					r.Me().ReadMessage(v.GetId())
+					c.Me().ReadMessage(v.GetId())
 				}
 			}
-			time.Sleep(r.Stream.CommentListInterval * time.Second)
+			time.Sleep(c.Stream.CommentListInterval * time.Second)
 		}
 	}()
-	return c
+	return ret
 }
 
 // StreamMentions streams recent mentions
 // c is the channel with all unread messages
-func (r *Reddit) StreamMentions() <-chan models.Comment {
-	c := make(chan models.Comment, 100)
+func (c *Reddit) StreamMentions() <-chan models.Comment {
+	ret := make(chan models.Comment, 100)
 	go func() {
 		for {
-			un, _ := r.Me().ListUnreadMessages()
+			un, _ := c.Me().ListUnreadMessages()
 			for _, v := range un {
 				if v.IsMention() {
 					// Only process comment replies and
 					// mark them as read.
-					c <- v
+					ret <- v
 					// You can read the message with
-					r.Me().ReadMessage(v.GetId())
+					c.Me().ReadMessage(v.GetId())
 				}
 			}
-			time.Sleep(r.Stream.CommentListInterval * time.Second)
+			time.Sleep(c.Stream.CommentListInterval * time.Second)
 		}
 	}()
-	return c
+	return ret
 }
 
 // StreamComments streams comments from a redditor or a subreddit
 // c is the channel with all comments
-func (r *Reddit) StreamComments() (<-chan models.Comment, error) {
-	name, ttype, err := r.checkType(subredditType, redditorType)
+func (c *Reddit) StreamComments() (<-chan models.Comment, error) {
+	name, ttype, err := c.checkType(subredditType, redditorType)
 	if err != nil {
 		return nil, err
 	}
 	switch ttype {
 	case subredditType:
-		return r.streamSubredditComments(name)
+		return c.streamSubredditComments(name)
 	case redditorType:
-		return r.streamRedditorComments(name)
+		return c.streamRedditorComments(name)
 	}
 	return nil, nil
 }
 
 // StreamSubmissions streams submissions from a redditor or a subreddit
 // c is the channel with all submissions.
-func (r *Reddit) StreamSubmissions() (<-chan models.PostListingChild, error) {
-	name, ttype, err := r.checkType(subredditType, redditorType)
+func (c *Reddit) StreamSubmissions() (<-chan models.PostListingChild, error) {
+	name, ttype, err := c.checkType(subredditType, redditorType)
 	if err != nil {
 		return nil, err
 	}
 	switch ttype {
 	case subredditType:
-		return r.streamSubredditSubmissions(name)
+		return c.streamSubredditSubmissions(name)
 	case redditorType:
-		return r.streamRedditorSubmissions(name)
+		return c.streamRedditorSubmissions(name)
 	}
 	return nil, nil
 }
 
-func (r *Reddit) streamSubredditComments(subreddit string) (<-chan models.Comment, error) {
-	c := make(chan models.Comment, 100)
-	anchor, err := r.Subreddit(subreddit).Comments("new", "hour", 1)
+func (c *Reddit) streamSubredditComments(subreddit string) (<-chan models.Comment, error) {
+	ret := make(chan models.Comment, 100)
+	anchor, err := c.Subreddit(subreddit).Comments("new", "hour", 1)
 	if err != nil {
 		return nil, err
 	}
@@ -94,24 +94,24 @@ func (r *Reddit) streamSubredditComments(subreddit string) (<-chan models.Commen
 	}
 	go func() {
 		for {
-			un, _ := r.Subreddit(subreddit).CommentsAfter("new", last, 100)
+			un, _ := c.Subreddit(subreddit).CommentsAfter("new", last, 100)
 			if len(un) < 1 {
-				time.Sleep(r.Stream.CommentListInterval * time.Second)
+				time.Sleep(c.Stream.CommentListInterval * time.Second)
 				continue
 			}
 			last = un[0].GetId()
 			for _, v := range un {
-				c <- v
+				ret <- v
 			}
-			time.Sleep(r.Stream.CommentListInterval * time.Second)
+			time.Sleep(c.Stream.CommentListInterval * time.Second)
 		}
 	}()
-	return c, nil
+	return ret, nil
 }
 
-func (r *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment, error) {
-	c := make(chan models.Comment, 100)
-	anchor, err := r.Redditor(redditor).Comments("new", "hour", 1)
+func (c *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment, error) {
+	ret := make(chan models.Comment, 100)
+	anchor, err := c.Redditor(redditor).Comments("new", "hour", 1)
 	if err != nil {
 		return nil, err
 	}
@@ -121,24 +121,24 @@ func (r *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment,
 	}
 	go func() {
 		for {
-			un, _ := r.Redditor(redditor).CommentsAfter("new", last, 100)
+			un, _ := c.Redditor(redditor).CommentsAfter("new", last, 100)
 			if len(un) < 1 {
-				time.Sleep(r.Stream.CommentListInterval * time.Second)
+				time.Sleep(c.Stream.CommentListInterval * time.Second)
 				continue
 			}
 			last = un[0].GetId()
 			for _, v := range un {
-				c <- v
+				ret <- v
 			}
-			time.Sleep(r.Stream.CommentListInterval * time.Second)
+			time.Sleep(c.Stream.CommentListInterval * time.Second)
 		}
 	}()
-	return c, nil
+	return ret, nil
 }
 
-func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.PostListingChild, error) {
-	c := make(chan models.PostListingChild, 100)
-	anchor, err := r.Subreddit(subreddit).Submissions("new", "hour", 1)
+func (c *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.PostListingChild, error) {
+	ret := make(chan models.PostListingChild, 100)
+	anchor, err := c.Subreddit(subreddit).Submissions("new", "hour", 1)
 	if err != nil {
 		return nil, err
 	}
@@ -148,24 +148,24 @@ func (r *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.Pos
 	}
 	go func() {
 		for {
-			new, _ := r.Subreddit(subreddit).SubmissionsAfter(last, r.Stream.PostListSlice)
+			new, _ := c.Subreddit(subreddit).SubmissionsAfter(last, c.Stream.PostListSlice)
 			if len(new) < 1 {
-				time.Sleep(r.Stream.PostListInterval * time.Second)
+				time.Sleep(c.Stream.PostListInterval * time.Second)
 				continue
 			}
 			last = new[0].GetId()
 			for i := range new {
-				c <- new[len(new)-i-1]
+				ret <- new[len(new)-i-1]
 			}
-			time.Sleep(r.Stream.PostListInterval * time.Second)
+			time.Sleep(c.Stream.PostListInterval * time.Second)
 		}
 	}()
-	return c, nil
+	return ret, nil
 }
 
-func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan models.PostListingChild, error) {
-	c := make(chan models.PostListingChild, 100)
-	anchor, err := r.Redditor(redditor).Submissions("new", "hour", 1)
+func (c *Reddit) streamRedditorSubmissions(redditor string) (<-chan models.PostListingChild, error) {
+	ret := make(chan models.PostListingChild, 100)
+	anchor, err := c.Redditor(redditor).Submissions("new", "hour", 1)
 	if err != nil {
 		return nil, err
 	}
@@ -175,17 +175,17 @@ func (r *Reddit) streamRedditorSubmissions(redditor string) (<-chan models.PostL
 	}
 	go func() {
 		for {
-			new, _ := r.Redditor(redditor).SubmissionsAfter(last, r.Stream.PostListSlice)
+			new, _ := c.Redditor(redditor).SubmissionsAfter(last, c.Stream.PostListSlice)
 			if len(new) < 1 {
-				time.Sleep(r.Stream.PostListInterval * time.Second)
+				time.Sleep(c.Stream.PostListInterval * time.Second)
 				continue
 			}
 			last = new[0].GetId()
 			for i := range new {
-				c <- new[len(new)-i-1]
+				ret <- new[len(new)-i-1]
 			}
-			time.Sleep(r.Stream.PostListInterval * time.Second)
+			time.Sleep(c.Stream.PostListInterval * time.Second)
 		}
 	}()
-	return c, nil
+	return ret, nil
 }
