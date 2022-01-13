@@ -236,7 +236,7 @@ func main() {
 	r, err := mira.Init(mira.ReadCredsFromFile("login.conf"))
 	me, err := r.Me().Info()
 	comment, err := r.Comment("t1_...").Info()
-	redditor, err := r.Redditor.Info("t2_...")
+	redditor, err := r.Redditor("t2_...").Info()
 	submission, err := r.Submission("t3_...").Info()
 	subreddit, err := r.Subreddit("t5_...").Info()
 }
