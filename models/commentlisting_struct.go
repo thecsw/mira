@@ -35,6 +35,7 @@ type CommentListingDataChildrenData struct {
 	New                   bool     `json:"new"`
 	Body                  string   `json:"body"`
 	LinkTitle             string   `json:"link_title"`
+	LinkId                string   `json:"link_id"`
 	Permalink             string   `json:"permalink"`
 	Dest                  string   `json:"dest"`
 	BodyHtml              string   `json:"body_html"`
