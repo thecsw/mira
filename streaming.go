@@ -110,14 +110,14 @@ func (c *Reddit) streamSubredditModQueue(subreddit string) (<-chan models.ModQue
 		for {
 			new, _ := c.Subreddit(subreddit).ModQueueAfter(last, c.Stream.PostListSlice)
 			if len(new) < 1 {
-				time.Sleep(c.Stream.PostListInterval * time.Second)
+				time.Sleep(c.Stream.ModQueueInterval * time.Second)
 				continue
 			}
 			last = new[0].GetId()
 			for i := range new {
 				ret <- new[len(new)-i-1]
 			}
-			time.Sleep(c.Stream.PostListInterval * time.Second)
+			time.Sleep(c.Stream.ModQueueInterval * time.Second)
 		}
 	}()
 	return ret, nil
@@ -151,14 +151,14 @@ func (c *Reddit) streamSubredditReports(subreddit string) (<-chan models.ReportL
 		for {
 			new, _ := c.Subreddit(subreddit).ReportsAfter(last, c.Stream.PostListSlice)
 			if len(new) < 1 {
-				time.Sleep(c.Stream.PostListInterval * time.Second)
+				time.Sleep(c.Stream.ReportsInterval * time.Second)
 				continue
 			}
 			last = new[0].GetId()
 			for i := range new {
 				ret <- new[len(new)-i-1]
 			}
-			time.Sleep(c.Stream.PostListInterval * time.Second)
+			time.Sleep(c.Stream.ReportsInterval * time.Second)
 		}
 	}()
 	return ret, nil

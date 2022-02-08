@@ -98,6 +98,7 @@ type PostListingChildData struct {
 	LinkFlairBackgroundColor   string             `json:"link_flair_background_color"`
 	Id                         string             `json:"id"`
 	IsRobotIndexable           bool               `json:"is_robot_indexable"`
+	ReportReasons              string             `json:"report_reasons"` // WILL BE REMOVED: as reddit's API always returns "This attribute is deprecated. Please use mod_reports and user_reports instead." now
 	Author                     string             `json:"author"`
 	NumCrossposts              float64            `json:"num_crossposts"`
 	NumComments                float64            `json:"num_comments"`
