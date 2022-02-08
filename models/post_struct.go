@@ -47,7 +47,7 @@ type PostListingChildData struct {
 	ThumbnailWidth             float64            `json:"thumbnail_width"`
 	AuthorFlairTemplateId      string             `json:"author_flair_template_id"`
 	IsOriginalContent          bool               `json:"is_original_content"`
-	UserReports                []string           `json:"user_reports"`
+	UserReports                []UserReport       `json:"user_reports"`
 	SecureMedia                string             `json:"secure_media"`
 	IsRedditMediaDomain        bool               `json:"is_reddit_media_domain"`
 	IsMeta                     bool               `json:"is_meta"`
@@ -98,7 +98,6 @@ type PostListingChildData struct {
 	LinkFlairBackgroundColor   string             `json:"link_flair_background_color"`
 	Id                         string             `json:"id"`
 	IsRobotIndexable           bool               `json:"is_robot_indexable"`
-	ReportReasons              string             `json:"report_reasons"`
 	Author                     string             `json:"author"`
 	NumCrossposts              float64            `json:"num_crossposts"`
 	NumComments                float64            `json:"num_comments"`

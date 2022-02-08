@@ -82,6 +82,88 @@ func (c *Reddit) StreamSubmissions() (<-chan models.PostListingChild, error) {
 	return nil, nil
 }
 
+// StreamModQueue streams modqueue entries from a subreddit
+// c is the channel with all modqueue entries.
+func (c *Reddit) StreamModQueue() (<-chan models.PostListingChild, error) {
+	name, ttype, err := c.checkType(subredditType)
+	if err != nil {
+		return nil, err
+	}
+	switch ttype {
+	case subredditType:
+		return c.streamSubredditModQueue(name)
+	}
+	return nil, nil
+}
+
+func (c *Reddit) streamSubredditModQueue(subreddit string) (<-chan models.ModQueueListingChild, error) {
+	ret := make(chan models.ModQueueListingChild, 100)
+	anchor, err := c.Subreddit(subreddit).ModQueue(1)
+	if err != nil {
+		return nil, err
+	}
+	last := ""
+	if len(anchor) > 0 {
+		last = anchor[0].GetId()
+	}
+	go func() {
+		for {
+			new, _ := c.Subreddit(subreddit).ModQueueAfter(last, c.Stream.PostListSlice)
+			if len(new) < 1 {
+				time.Sleep(c.Stream.PostListInterval * time.Second)
+				continue
+			}
+			last = new[0].GetId()
+			for i := range new {
+				ret <- new[len(new)-i-1]
+			}
+			time.Sleep(c.Stream.PostListInterval * time.Second)
+		}
+	}()
+	return ret, nil
+}
+
+// StreamReports streams reports entries from a subreddit
+// c is the channel with all report entries.
+func (c *Reddit) StreamReports() (<-chan models.ReportListingChild, error) {
+	name, ttype, err := c.checkType(subredditType)
+	if err != nil {
+		return nil, err
+	}
+	switch ttype {
+	case subredditType:
+		return c.streamSubredditReports(name)
+	}
+	return nil, nil
+}
+
+func (c *Reddit) streamSubredditReports(subreddit string) (<-chan models.ReportListingChild, error) {
+	ret := make(chan models.ModQueueListingChild, 100)
+	anchor, err := c.Subreddit(subreddit).Reports(1)
+	if err != nil {
+		return nil, err
+	}
+	last := ""
+	if len(anchor) > 0 {
+		last = anchor[0].GetId()
+	}
+	go func() {
+		for {
+			new, _ := c.Subreddit(subreddit).ReportsAfter(last, c.Stream.PostListSlice)
+			if len(new) < 1 {
+				time.Sleep(c.Stream.PostListInterval * time.Second)
+				continue
+			}
+			last = new[0].GetId()
+			for i := range new {
+				ret <- new[len(new)-i-1]
+			}
+			time.Sleep(c.Stream.PostListInterval * time.Second)
+		}
+	}()
+	return ret, nil
+}
+
 func (c *Reddit) streamSubredditComments(subreddit string) (<-chan models.Comment, error) {
 	ret := make(chan models.Comment, 100)
 	anchor, err := c.Subreddit(subreddit).Comments("new", "hour", 1)
