@@ -23,6 +23,8 @@ type Streaming struct {
 	CommentListInterval time.Duration
 	PostListInterval    time.Duration
 	PostListSlice       int
+	ReportsInterval     time.Duration
+	ModQueueInterval    time.Duration
 }
 
 // RedditVals is just some values to backoff

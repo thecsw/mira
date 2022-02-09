@@ -89,6 +89,8 @@ func (c *Reddit) SetDefault() {
 	c.Stream = Streaming{
 		CommentListInterval: 8,
 		PostListInterval:    10,
+		ReportsInterval:     15,
+		ModQueueInterval:    15,
 		PostListSlice:       25,
 	}
 	c.Values = RedditVals{
