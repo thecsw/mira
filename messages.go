@@ -18,7 +18,7 @@ func (c *Reddit) Compose(subject, text string) error {
 		"subject":  subject,
 		"text":     text,
 		"to":       name,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	return err
 }

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/pkg/errors"
+
 	"github.com/thecsw/mira/models"
 )
 
@@ -37,8 +39,8 @@ func (c *Reddit) ReportsAfter(last string, limit int) ([]models.ReportListingChi
 }
 
 func unMarshalReports(ans []byte, mql models.ReportListing) (models.ReportListing, error) {
-	json.Unmarshal(ans, &mql)
-	return mql, nil
+	err := json.Unmarshal(ans, &mql)
+	return mql, err
 }
 
 func (c *Reddit) getSubredditReports(sr string, limit int) ([]models.ReportListingChild, error) {
@@ -46,6 +48,9 @@ func (c *Reddit) getSubredditReports(sr string, limit int) ([]models.ReportListi
 	ans, err := c.MiraRequest(http.MethodGet, target, map[string]string{
 		"limit": strconv.Itoa(limit),
 	})
+	if err != nil {
+		return nil, errors.Wrap(err, "mira request failed in getSubredditReports")
+	}
 	ret := models.ReportListing{}
 	ret, err = unMarshalReports(ans, ret)
 	return ret.GetChildren(), err
@@ -57,6 +62,9 @@ func (c *Reddit) getSubredditReportsAfter(sr string, last string, limit int) ([]
 		"limit":  strconv.Itoa(limit),
 		"before": last,
 	})
+	if err != nil {
+		return nil, errors.Wrap(err, "mira request failed in getSubredditReportsAfter")
+	}
 	ret := models.ReportListing{}
 	ret, err = unMarshalReports(ans, ret)
 	return ret.GetChildren(), err

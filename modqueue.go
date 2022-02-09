@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/pkg/errors"
 	"github.com/thecsw/mira/models"
 )
 
@@ -41,6 +42,9 @@ func (c *Reddit) getSubredditModQueue(sr string, limit int) ([]models.ModQueueLi
 	ans, err := c.MiraRequest(http.MethodGet, target, map[string]string{
 		"limit": strconv.Itoa(limit),
 	})
+	if err != nil {
+		return nil, errors.Wrap(err, "mira request failed in getSubredditModQueue")
+	}
 	ret := models.ModQueueListing{}
 	err = json.Unmarshal(ans, &ret)
 	return ret.GetChildren(), err
@@ -52,6 +56,9 @@ func (c *Reddit) getSubredditModQueueAfter(sr string, last string, limit int) ([
 		"limit":  strconv.Itoa(limit),
 		"before": last,
 	})
+	if err != nil {
+		return nil, errors.Wrap(err, "mira request failed in getSubredditModQueueAfter")
+	}
 	ret := models.ModQueueListing{}
 	err = json.Unmarshal(ans, &ret)
 	return ret.GetChildren(), err

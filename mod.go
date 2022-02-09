@@ -15,7 +15,7 @@ func (c *Reddit) Approve() error {
 	target := RedditOauth + "/api/approve"
 	_, err = c.MiraRequest(http.MethodPost, target, map[string]string{
 		"id":       name,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	return err
 }
@@ -32,7 +32,7 @@ func (c *Reddit) Distinguish(how string, sticky bool) error {
 		"id":       name,
 		"how":      how,
 		"sticky":   strconv.FormatBool(sticky),
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	return err
 }
@@ -52,7 +52,7 @@ func (c *Reddit) UpdateSidebar(text string) error {
 		"wikimode":    "anyone",
 		"link_type":   "any",
 		"type":        "public",
-		"api_type":    "json",
+		"api_type":    JsonAPI,
 	})
 	return err
 }
@@ -67,7 +67,7 @@ func (c *Reddit) SelectFlair(text string) error {
 	_, err = c.MiraRequest(http.MethodPost, target, map[string]string{
 		"link":     name,
 		"text":     text,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	return err
 }
@@ -78,7 +78,7 @@ func (c *Reddit) SelectFlairWithID(name, text string) error {
 	_, err := c.MiraRequest(http.MethodPost, target, map[string]string{
 		"link":     name,
 		"text":     text,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	return err
 }
@@ -93,7 +93,7 @@ func (c *Reddit) UserFlair(user, text string) error {
 	_, err = c.MiraRequest(http.MethodPost, target, map[string]string{
 		"name":     user,
 		"text":     text,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	return err
 }
@@ -104,7 +104,7 @@ func (c *Reddit) UserFlairWithID(name, user, text string) error {
 	_, err := c.MiraRequest(http.MethodPost, target, map[string]string{
 		"name":     user,
 		"text":     text,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	return err
 }
