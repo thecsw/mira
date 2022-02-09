@@ -10,7 +10,7 @@
 
 For full documentation, please see the [Godoc page](https://godoc.org/github.com/thecsw/mira)
 
-*mira* is a Reddit Api Wrapper written in beautiful Go. Featured in issue [306](https://golangweekly.com/issues/306) of Golang Weekly 
+*mira* is a Reddit Api Wrapper written in beautiful Go. Featured in issue [306](https://golangweekly.com/issues/306) of Golang Weekly 🚀
 
 It is super simple to use the bot as we also provide you with simple but fully extensive 
 interfaces. Currently, *mira* is a project that is considered more or less complete. All
