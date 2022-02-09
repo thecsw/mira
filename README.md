@@ -292,8 +292,8 @@ will add elements to its internal queue, so that the layout is:
 
 ```
 Enqueue->
-              redditor  submission  comment               // type
-	|BACK| -> |USER1| -> |SUBM1| -> |COMM1| -> |FRONT|    // value
+                  redditor  submission  comment               // type
+        |BACK| -> |USER1| -> |SUBM1| -> |COMM1| -> |FRONT|    // value
                                                   Dequeue->
 ```
 
