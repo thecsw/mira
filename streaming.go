@@ -84,7 +84,7 @@ func (c *Reddit) StreamSubmissions() (<-chan models.PostListingChild, error) {
 
 // StreamModQueue streams modqueue entries from a subreddit
 // c is the channel with all modqueue entries.
-func (c *Reddit) StreamModQueue() (<-chan models.PostListingChild, error) {
+func (c *Reddit) StreamModQueue() (<-chan models.ModQueueListingChild, error) {
 	name, ttype, err := c.checkType(subredditType)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (c *Reddit) StreamReports() (<-chan models.ReportListingChild, error) {
 }
 
 func (c *Reddit) streamSubredditReports(subreddit string) (<-chan models.ReportListingChild, error) {
-	ret := make(chan models.ModQueueListingChild, 100)
+	ret := make(chan models.ReportListingChild, 100)
 	anchor, err := c.Subreddit(subreddit).Reports(1)
 	if err != nil {
 		return nil, err

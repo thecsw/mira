@@ -2,7 +2,6 @@ package mira
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,7 +11,7 @@ import (
 
 // Reports returns report entries from a subreddit up to a specified limit sorted by the given parameters
 // Limit is any numerical value, so 0 <= limit <= 100.
-func (c *Reddit) Reports(limit int) ([]models.ModQueueListingChild, error) {
+func (c *Reddit) Reports(limit int) ([]models.ReportListingChild, error) {
 	name, ttype := c.getQueue()
 	switch ttype {
 	case subredditType:
@@ -27,7 +26,7 @@ func (c *Reddit) Reports(limit int) ([]models.ModQueueListingChild, error) {
 // Last is the anchor of a modqueue entry id
 //
 // Limit is any numerical value, so 0 <= limit <= 100.
-func (c *Reddit) ReportsAfter(last string, limit int) ([]models.ModQueueListingChild, error) {
+func (c *Reddit) ReportsAfter(last string, limit int) ([]models.ReportListingChild, error) {
 	name, ttype := c.getQueue()
 	switch ttype {
 	case subredditType:
@@ -39,15 +38,6 @@ func (c *Reddit) ReportsAfter(last string, limit int) ([]models.ModQueueListingC
 
 func unMarshalReports(ans []byte, mql models.ReportListing) (models.ReportListing, error) {
 	json.Unmarshal(ans, &mql)
-	for index, value := range mql.Data.Children {
-		if value.Kind == "t1" {
-			mql.Data.Children[index].Data = mql.Data.Children[index].Data.(models.CommentListingDataChildrenData)
-		} else if value.Kind == "t3" {
-			mql.Data.Children[index].Data = mql.Data.Children[index].Data.(models.PostListingChildData)
-		} else {
-			return mql, errors.New("could not convert reports entry data to struct")
-		}
-	}
 	return mql, nil
 }
 

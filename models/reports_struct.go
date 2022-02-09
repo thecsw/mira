@@ -12,8 +12,6 @@ type ReportListingData struct {
 }
 
 type ReportListingChild struct {
-	Kind   string      `json:"kind"`
-	Data   interface{} `json:"data"`
-	After  string      `json:"after"`
-	Before string      `json:"before"`
+	Kind string               `json:"kind"`
+	Data PostListingChildData `json:"data"`
 }

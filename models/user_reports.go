@@ -1,5 +1,8 @@
 package models
 
 type UserReport struct {
-	Reason string `json:"0"`
+	Reason       string
+	NumOfReports float64
+	SnoozeStatus bool
+	CanSnooze    bool
 }
