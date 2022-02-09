@@ -1,13 +1,16 @@
 ![mira](./mira.png)
 
+<div id='badges' align='center'>
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/thecsw/mira)](https://goreportcard.com/report/github.com/thecsw/mira)
-[![Build Status](https://travis-ci.org/thecsw/mira.svg?branch=master)](https://travis-ci.org/thecsw/mira)
 [![GoDoc](https://godoc.org/github.com/thecsw/mira?status.svg)](https://godoc.org/github.com/thecsw/mira)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
+</div>
+
 For full documentation, please see the [Godoc page](https://godoc.org/github.com/thecsw/mira)
 
-*mira* is a Reddit Api Wrapper written in beautiful Go.
+*mira* is a Reddit Api Wrapper written in beautiful Go. Featured in issue [306](https://golangweekly.com/issues/306) of Golang Weekly 🚀
 
 It is super simple to use the bot as we also provide you with simple but fully extensive 
 interfaces. Currently, *mira* is a project that is considered more or less complete. All
@@ -289,8 +292,8 @@ will add elements to its internal queue, so that the layout is:
 
 ```
 Enqueue->
-              redditor  submission  comment               // type
-	|BACK| -> |USER1| -> |SUBM1| -> |COMM1| -> |FRONT|    // value
+                  redditor  submission  comment               // type
+        |BACK| -> |USER1| -> |SUBM1| -> |COMM1| -> |FRONT|    // value
                                                   Dequeue->
 ```
 
