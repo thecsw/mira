@@ -166,7 +166,7 @@ func (c *Reddit) streamSubredditReports(subreddit string) (<-chan models.ReportL
 
 func (c *Reddit) streamSubredditComments(subreddit string) (<-chan models.Comment, error) {
 	ret := make(chan models.Comment, 100)
-	anchor, err := c.Subreddit(subreddit).Comments("new", "hour", 1)
+	anchor, err := c.Subreddit(subreddit).Comments(New, Hour, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +176,7 @@ func (c *Reddit) streamSubredditComments(subreddit string) (<-chan models.Commen
 	}
 	go func() {
 		for {
-			un, _ := c.Subreddit(subreddit).CommentsAfter("new", last, 100)
+			un, _ := c.Subreddit(subreddit).CommentsAfter(New, last, 100)
 			if len(un) < 1 {
 				time.Sleep(c.Stream.CommentListInterval * time.Second)
 				continue
@@ -193,7 +193,7 @@ func (c *Reddit) streamSubredditComments(subreddit string) (<-chan models.Commen
 
 func (c *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment, error) {
 	ret := make(chan models.Comment, 100)
-	anchor, err := c.Redditor(redditor).Comments("new", "hour", 1)
+	anchor, err := c.Redditor(redditor).Comments(New, Hour, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (c *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment,
 	}
 	go func() {
 		for {
-			un, _ := c.Redditor(redditor).CommentsAfter("new", last, 100)
+			un, _ := c.Redditor(redditor).CommentsAfter(New, last, 100)
 			if len(un) < 1 {
 				time.Sleep(c.Stream.CommentListInterval * time.Second)
 				continue
@@ -220,7 +220,7 @@ func (c *Reddit) streamRedditorComments(redditor string) (<-chan models.Comment,
 
 func (c *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.PostListingChild, error) {
 	ret := make(chan models.PostListingChild, 100)
-	anchor, err := c.Subreddit(subreddit).Submissions("new", "hour", 1)
+	anchor, err := c.Subreddit(subreddit).Submissions(New, Hour, 1)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +247,7 @@ func (c *Reddit) streamSubredditSubmissions(subreddit string) (<-chan models.Pos
 
 func (c *Reddit) streamRedditorSubmissions(redditor string) (<-chan models.PostListingChild, error) {
 	ret := make(chan models.PostListingChild, 100)
-	anchor, err := c.Redditor(redditor).Submissions("new", "hour", 1)
+	anchor, err := c.Redditor(redditor).Submissions(New, Hour, 1)
 	if err != nil {
 		return nil, err
 	}

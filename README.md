@@ -318,7 +318,7 @@ func (c *Reddit) Reply(text string) (models.CommentWrap, error) {
 	ans, err := c.MiraRequest("POST", target, map[string]string{
 		"text":     text,
 		"thing_id": name,
-		"api_type": "json",
+		"api_type": ApiTypeJson,
 	})
 	json.Unmarshal(ans, ret)
 	return *ret, err

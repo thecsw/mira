@@ -21,7 +21,7 @@ func (c *Reddit) Submit(title string, text string) (models.Submission, error) {
 		"text":     text,
 		"kind":     "self",
 		"resubmit": "true",
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	json.Unmarshal(ans, ret)
 	return *ret, err
@@ -38,7 +38,7 @@ func (c *Reddit) Reply(text string) (models.CommentWrap, error) {
 	ans, err := c.MiraRequest(http.MethodPost, target, map[string]string{
 		"text":     text,
 		"thing_id": name,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	json.Unmarshal(ans, ret)
 	return *ret, err
@@ -51,7 +51,7 @@ func (c *Reddit) ReplyWithID(name, text string) (models.CommentWrap, error) {
 	ans, err := c.MiraRequest(http.MethodPost, target, map[string]string{
 		"text":     text,
 		"thing_id": name,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	json.Unmarshal(ans, ret)
 	return *ret, err
@@ -68,7 +68,7 @@ func (c *Reddit) Save(text string) (models.CommentWrap, error) {
 	ans, err := c.MiraRequest(http.MethodPost, target, map[string]string{
 		"text":     text,
 		"thing_id": name,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	json.Unmarshal(ans, ret)
 	return *ret, err
@@ -81,7 +81,7 @@ func (c *Reddit) SaveWithID(name, text string) (models.CommentWrap, error) {
 	ans, err := c.MiraRequest(http.MethodPost, target, map[string]string{
 		"text":     text,
 		"thing_id": name,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	json.Unmarshal(ans, ret)
 	return *ret, err
@@ -96,7 +96,7 @@ func (c *Reddit) Delete() error {
 	target := RedditOauth + "/api/del"
 	_, err = c.MiraRequest(http.MethodPost, target, map[string]string{
 		"id":       name,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	return err
 }
@@ -112,7 +112,7 @@ func (c *Reddit) Edit(text string) (models.CommentWrap, error) {
 	ans, err := c.MiraRequest(http.MethodPost, target, map[string]string{
 		"text":     text,
 		"thing_id": name,
-		"api_type": "json",
+		"api_type": JsonAPI,
 	})
 	json.Unmarshal(ans, ret)
 	return *ret, err

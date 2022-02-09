@@ -12,9 +12,9 @@ import (
 
 // Comments returns comments from a subreddit up to a specified limit sorted by the given parameters
 //
-// Sorting options: "hot", "new", "top", "rising", "controversial", "random"
+// Sorting options: `Hot`, `New`, `Top`, `Rising`, `Controversial`, `Random`
 //
-// Duration options: "hour", "day", "week", "year", "all"
+// Duration options: `Hour`, `Day`, `Week`, `Year`, `All`
 //
 // Limit is any numerical value, so 0 <= limit <= 100.
 func (c *Reddit) Comments(sort string, tdur string, limit int) ([]models.Comment, error) {
