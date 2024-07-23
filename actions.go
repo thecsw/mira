@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/thecsw/mira/models"
+	"github.com/thecsw/mira/v3/models"
 )
 
 // Submit submits a submission to a subreddit.

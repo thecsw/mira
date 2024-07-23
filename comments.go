@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/thecsw/mira/models"
+	"github.com/thecsw/mira/v3/models"
 )
 
 // Comments returns comments from a subreddit up to a specified limit sorted by the given parameters
@@ -37,7 +37,7 @@ func (c *Reddit) Comments(sort string, tdur string, limit int) ([]models.Comment
 
 // CommentsAfter returns new comments from a subreddit
 //
-// Last is the anchor of a comment id
+// # Last is the anchor of a comment id
 //
 // Limit is any numerical value, so 0 <= limit <= 100.
 func (c *Reddit) CommentsAfter(sort string, last string, limit int) ([]models.Comment, error) {

@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
-	"github.com/thecsw/mira/models"
+	"github.com/thecsw/mira/v3/models"
 )
 
 // ModQueue returns modqueue entries from a subreddit up to a specified limit sorted by the given parameters
@@ -24,7 +24,7 @@ func (c *Reddit) ModQueue(limit int) ([]models.ModQueueListingChild, error) {
 
 // ModQueueAfter returns new modqueue entries from a subreddit
 //
-// Last is the anchor of a modqueue entry id
+// # Last is the anchor of a modqueue entry id
 //
 // Limit is any numerical value, so 0 <= limit <= 100.
 func (c *Reddit) ModQueueAfter(last string, limit int) ([]models.ModQueueListingChild, error) {

@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/thecsw/mira/models"
+	"github.com/thecsw/mira/v3/models"
 )
 
 // Submissions returns submissions from a subreddit up to a specified limit sorted by the given parameters
@@ -32,7 +32,7 @@ func (c *Reddit) Submissions(sort string, tdur string, limit int) ([]models.Post
 
 // SubmissionsAfter returns new submissions from a subreddit
 //
-// Last is the anchor of a submission id
+// # Last is the anchor of a submission id
 //
 // Limit is any numerical value, so 0 <= limit <= 100.
 func (c *Reddit) SubmissionsAfter(last string, limit int) ([]models.PostListingChild, error) {

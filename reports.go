@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/thecsw/mira/models"
+	"github.com/thecsw/mira/v3/models"
 )
 
 // Reports returns report entries from a subreddit up to a specified limit sorted by the given parameters
@@ -25,7 +25,7 @@ func (c *Reddit) Reports(limit int) ([]models.ReportListingChild, error) {
 
 // ReportsAfter returns new report entries from a subreddit
 //
-// Last is the anchor of a modqueue entry id
+// # Last is the anchor of a modqueue entry id
 //
 // Limit is any numerical value, so 0 <= limit <= 100.
 func (c *Reddit) ReportsAfter(last string, limit int) ([]models.ReportListingChild, error) {

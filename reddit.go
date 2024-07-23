@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/thecsw/mira/models"
+	"github.com/thecsw/mira/v3/models"
 )
 
 // MiraRequest Reddit API is always developing and I can't implement all endpoints;
@@ -17,7 +17,7 @@ import (
 //
 // Here is the signature:
 //
-//   func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {...}
+//	func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {...}
 //
 // It is pretty straight-forward, the return is a slice of bytes; Parse it yourself.
 func (c *Reddit) MiraRequest(method string, target string, payload map[string]string) ([]byte, error) {
