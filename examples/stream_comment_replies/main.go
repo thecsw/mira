@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/thecsw/mira/v3"
+	"github.com/thecsw/mira/v4"
 )
 
 func main() {

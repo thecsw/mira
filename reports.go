@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/thecsw/mira/v3/models"
+	"github.com/thecsw/mira/v4/models"
 )
 
 // Reports returns report entries from a subreddit up to a specified limit sorted by the given parameters

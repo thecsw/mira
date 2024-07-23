@@ -3,7 +3,7 @@ package main
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/thecsw/mira/v3"
+	"github.com/thecsw/mira/v4"
 )
 
 func main() {

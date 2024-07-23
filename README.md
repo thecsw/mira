@@ -2,13 +2,13 @@
 
 <div id='badges' align='center'>
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/thecsw/mira/v3)](https://goreportcard.com/report/github.com/thecsw/mira/v3)
-[![GoDoc](https://godoc.org/github.com/thecsw/mira/v3?status.svg)](https://godoc.org/github.com/thecsw/mira/v3)
+[![Go Report Card](https://goreportcard.com/badge/github.com/thecsw/mira/v4)](https://goreportcard.com/report/github.com/thecsw/mira/v4)
+[![GoDoc](https://godoc.org/github.com/thecsw/mira/v4?status.svg)](https://godoc.org/github.com/thecsw/mira/v4)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 </div>
 
-For full documentation, please see the [Godoc page](https://godoc.org/github.com/thecsw/mira/v3)
+For full documentation, please see the [Godoc page](https://godoc.org/github.com/thecsw/mira/v4)
 
 *mira* is a Reddit Api Wrapper written in beautiful Go. Featured in issue [306](https://golangweekly.com/issues/306) of Golang Weekly 🚀
 
@@ -150,7 +150,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/thecsw/mira/v3"
+	"github.com/thecsw/mira/v4"
 )
 
 // Error checking is omitted for brevity
@@ -185,7 +185,7 @@ We can also send a message to another user!
 package main
 
 import (
-	"github.com/thecsw/mira/v3"
+	"github.com/thecsw/mira/v4"
 )
 
 func main() {
@@ -206,7 +206,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/thecsw/mira/v3"
+	"github.com/thecsw/mira/v4"
 )
 
 func main() {
@@ -232,7 +232,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/thecsw/mira/v3"
+	"github.com/thecsw/mira/v4"
 )
 
 func main() {

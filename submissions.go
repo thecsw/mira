@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/thecsw/mira/v3/models"
+	"github.com/thecsw/mira/v4/models"
 )
 
 // Submissions returns submissions from a subreddit up to a specified limit sorted by the given parameters

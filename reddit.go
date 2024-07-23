@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/thecsw/mira/v3/models"
+	"github.com/thecsw/mira/v4/models"
 )
 
 // MiraRequest Reddit API is always developing and I can't implement all endpoints;

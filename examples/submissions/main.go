@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/thecsw/mira/v3"
+	"github.com/thecsw/mira/v4"
 )
 
 func main() {

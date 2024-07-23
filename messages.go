@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/thecsw/mira/v3/models"
+	"github.com/thecsw/mira/v4/models"
 )
 
 // Compose will send a message to next redditor.
