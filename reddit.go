@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/thecsw/mira/v4/models"
@@ -38,6 +39,24 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 		return nil, err
 	}
 	defer response.Body.Close()
+
+	// Extract rate-limiting information from the response headers
+	if rateLimitUsed := response.Header.Get("X-Ratelimit-Used"); rateLimitUsed != "" {
+		if used, err := strconv.Atoi(rateLimitUsed); err == nil {
+			c.RateLimitUsed = used
+		}
+	}
+	if rateLimitRemaining := response.Header.Get("X-Ratelimit-Remaining"); rateLimitRemaining != "" {
+		if remaining, err := strconv.Atoi(rateLimitRemaining); err == nil {
+			c.RateLimitRemaining = remaining
+		}
+	}
+	if rateLimitReset := response.Header.Get("X-Ratelimit-Reset"); rateLimitReset != "" {
+		if reset, err := strconv.Atoi(rateLimitReset); err == nil {
+			c.RateLimitReset = reset
+		}
+	}
+
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	data := buf.Bytes()
