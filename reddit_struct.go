@@ -15,9 +15,9 @@ type Reddit struct {
 	Stream             Streaming
 	Values             RedditVals
 	Client             *http.Client
-	RateLimitUsed      int // The number of requests used in the current rate limit window
-	RateLimitRemaining int // The number of requests left to use in the current rate limit window
-	RateLimitReset     int // The number of seconds left in the current rate limit window
+	RateLimitUsed      int     // The number of requests used in the current rate limit window
+	RateLimitRemaining float64 // The number of requests left to use in the current rate limit window
+	RateLimitReset     int     // The number of seconds left in the current rate limit window
 }
 
 // Streaming is used for some durations on how frequently

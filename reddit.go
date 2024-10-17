@@ -40,14 +40,14 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 	}
 	defer response.Body.Close()
 
-	// Extract rate-limiting information from the response headers
+	// Reddit returns integers for X-Ratelimit-Used and X-Ratelimit-Reset, but not for X-Ratelimit-Remaining
 	if rateLimitUsed := response.Header.Get("X-Ratelimit-Used"); rateLimitUsed != "" {
 		if used, err := strconv.Atoi(rateLimitUsed); err == nil {
 			c.RateLimitUsed = used
 		}
 	}
 	if rateLimitRemaining := response.Header.Get("X-Ratelimit-Remaining"); rateLimitRemaining != "" {
-		if remaining, err := strconv.Atoi(rateLimitRemaining); err == nil {
+		if remaining, err := strconv.ParseFloat(rateLimitRemaining, 64); err == nil {
 			c.RateLimitRemaining = remaining
 		}
 	}
