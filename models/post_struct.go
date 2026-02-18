@@ -47,7 +47,7 @@ type PostListingChildData struct {
 	ThumbnailWidth             float64            `json:"thumbnail_width"`
 	AuthorFlairTemplateId      string             `json:"author_flair_template_id"`
 	IsOriginalContent          bool               `json:"is_original_content"`
-	UserReports                []interface{}      `json:"user_reports"`
+	UserReports                []any              `json:"user_reports"`
 	SecureMedia                string             `json:"secure_media"`
 	IsRedditMediaDomain        bool               `json:"is_reddit_media_domain"`
 	IsMeta                     bool               `json:"is_meta"`

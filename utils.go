@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -45,12 +46,7 @@ func (c *Reddit) getQueue() (string, string) {
 }
 
 func findElem(elem string, arr []string) bool {
-	for _, v := range arr {
-		if elem == v {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(arr, elem)
 }
 
 // RedditErr is a struct to store reddit error messages.

@@ -38,6 +38,7 @@ func (c *Reddit) MiraRequest(method string, target string, payload map[string]st
 		return nil, err
 	}
 	defer response.Body.Close()
+
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	data := buf.Bytes()
